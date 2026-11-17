@@ -1,7 +1,7 @@
 // Service worker do Palpiteiro: deixa o app instalável, abre rápido
 // e mostra uma tela amigável quando o celular está sem internet.
 // Ao mudar arquivos do app, aumente a versão abaixo.
-const VERSION = "palpiteiro-v4";
+const VERSION = "palpiteiro-v5";
 const SHELL = [
   "./",
   "index.html",
@@ -40,7 +40,7 @@ self.addEventListener("fetch", e => {
   }
 
   // Arquivos do próprio app: responde do cache e atualiza por trás.
-  if (url.origin === location.origin && url.pathname.startsWith("/ia/") && !url.pathname.includes("/admin/")) {
+  if (url.origin === location.origin && !url.pathname.includes("/admin/")) {
     e.respondWith(
       caches.open(VERSION).then(async c => {
         const hit = await c.match(req);
