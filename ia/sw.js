@@ -1,12 +1,12 @@
 // Service worker do Palpiteiro: deixa o app instalável, abre rápido
 // e mostra uma tela amigável quando o celular está sem internet.
 // Ao mudar arquivos do app, aumente a versão abaixo.
-const VERSION = "palpiteiro-v5";
+const VERSION = "palpiteiro-v6";
 const SHELL = [
   "./",
   "index.html",
   "offline.html",
-  "gate.js?v=4",
+  "gate.js?v=5",
   "firebase-config.js",
   "manifest.webmanifest",
   "icon-192.png?v=3",

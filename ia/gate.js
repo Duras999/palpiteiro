@@ -33,7 +33,12 @@ async function start() {
   auth.languageCode = "pt-BR";
   A.setPersistence(auth, A.browserLocalPersistence).catch(() => {});
   const admins = (ADMINS || []).map(e => String(e).toLowerCase());
-  let unsub = null, unsubTickets = null, beat = null;
+  const souAdmin = u => {
+    const e = String((u && u.email) || "").toLowerCase();
+    return !!e && (admins.includes(e) || adminsExtra.includes(e));
+  };
+  let unsub = null, unsubTickets = null, unsubOut = null, unsubCasas = null, unsubAdm = null, beat = null;
+  let adminsExtra = [];
 
   const ua = navigator.userAgent;
   const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -122,7 +127,7 @@ async function start() {
       <input id="g-mail" type="email" inputmode="email" placeholder="E-mail" autocomplete="email" autocapitalize="off">
       <input id="g-wpp" type="tel" inputmode="tel" placeholder="WhatsApp com DDD" autocomplete="tel" maxlength="20">
       <input id="g-pass" type="password" placeholder="Crie uma senha (mín. 6)" autocomplete="new-password">
-      <label class="g-check"><input type="checkbox" id="g-18"><span>Tenho 18 anos ou mais e sei que palpite não é garantia de resultado.</span></label>
+      <label class="g-check"><input type="checkbox" id="g-18"><span>Tenho 18 anos ou mais, sei que palpite não é garantia de resultado e aceito os <a href="termos/" target="_blank" rel="noopener" style="color:var(--green);font-weight:700">termos de uso e privacidade</a>.</span></label>
       <div class="g-err" hidden></div>
       <button class="g-main" id="g-sign">Pedir acesso</button>
       <p class="g-link">Já tem conta? <a href="#" id="g-tologin">Entrar</a></p>`);
@@ -194,7 +199,9 @@ async function start() {
   };
   const loading = () => show(`<div class="g-load"><span class="dots"><i></i><i></i><i></i></span></div>`);
 
-  const today = () => new Date().toLocaleDateString("en-CA", {timeZone: "America/Sao_Paulo"});
+  const TZBR = "America/Sao_Paulo";
+  const today = () => new Date().toLocaleDateString("en-CA", {timeZone: TZBR});
+  const ontem = () => new Date(Date.now() - 86400000).toLocaleDateString("en-CA", {timeZone: TZBR});
 
   // Bilhetes prontos do dia, cadastrados no painel do administrador.
   const watchTickets = () => {
@@ -208,28 +215,106 @@ async function start() {
     watchTickets.day = day;
   };
 
+  // Desfalques cadastrados no painel.
+  const watchOut = () => {
+    if (unsubOut) unsubOut();
+    unsubOut = F.onSnapshot(F.collection(db, "desfalques"), s => {
+      window.palOut = s.docs.map(d => ({id: d.id, ...d.data()}));
+      window.palRender && window.palRender();
+    }, e => console.warn("Palpiteiro: desfalques", e && e.code));
+  };
+
+  // Casas de apostas que aparecem nos botões do app.
+  const watchCasas = () => {
+    if (unsubCasas) unsubCasas();
+    unsubCasas = F.onSnapshot(F.collection(db, "casas"), s => {
+      window.palCasas = s.docs.map(d => ({id: d.id, ...d.data()}))
+        .filter(c => c.ativa !== false && c.link)
+        .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+      window.palRender && window.palRender();
+    }, e => console.warn("Palpiteiro: casas", e && e.code));
+  };
+
   const closeApp = () => {
     window.track = () => {};
     window.palUser = null;
     window.palTickets = null;
     if (unsubTickets) { unsubTickets(); unsubTickets = null; }
+    if (unsubOut) { unsubOut(); unsubOut = null; }
+    if (unsubCasas) { unsubCasas(); unsubCasas = null; }
     if (beat) { clearInterval(beat); beat = null; }
+    window.palCasas = null; window.palCalibra = null;
+    window.palSave = null; window.palBolao = null; window.palOut = null; window.palStreak = 0;
+    window.palIsAdmin = false; window.palSalvarBilhetes = null; window.palClick = null;
     document.body.classList.add("locked");
     gate.hidden = false;
   };
 
-  const openApp = (u) => {
+  const openApp = (u, d) => {
     document.body.classList.remove("locked");
     gate.hidden = true;
     window.palUser = {email: u.email || "", name: u.displayName || ""};
     window.palSignOut = () => { if (confirm("Sair da sua conta?")) A.signOut(auth); };
     const ref = F.doc(db, "users", u.uid);
+    // Guarda favoritos e bilhete na conta, não só no celular.
+    window.palSave = patch => F.updateDoc(ref, patch).catch(e => console.warn("Palpiteiro: não salvou", e && e.code));
+    // Sequência de dias abrindo o app.
+    const hoje = today();
+    let seq = +d.streak || 0;
+    if (d.lastDay === hoje) { if (!seq) seq = 1; }
+    else { seq = d.lastDay === ontem() ? seq + 1 : 1; F.updateDoc(ref, {streak: seq, lastDay: hoje}).catch(() => {}); }
+    window.palStreak = seq;
+    // Bolão: cada palpite de placar é um documento, com a hora do jogo gravada.
+    const limpaId = id => String(id).replace(/[^A-Za-z0-9_-]/g, "");
+    const docId = id => `${u.uid}__${limpaId(id)}`;
+    window.palBolao = {
+      meus: async (dia) => {
+        const q = F.query(F.collection(db, "bolao"), F.where("uid", "==", u.uid), F.where("dia", "==", dia));
+        const s = await F.getDocs(q);
+        const out = {};
+        s.docs.forEach(x => { const v = x.data(); out[v.matchId] = {h: v.h, a: v.a, pts: v.pts || 0, pontuado: v.pontuado === true}; });
+        return out;
+      },
+      salvar: async (matchId, kickISO, h, a) => {
+        const r = F.doc(db, "bolao", docId(matchId));
+        const dia = new Date(kickISO).toLocaleDateString("en-CA", {timeZone: TZBR});
+        const snap = await F.getDoc(r);
+        if (snap.exists()) return F.updateDoc(r, {h, a, updatedAt: F.serverTimestamp()});
+        return F.setDoc(r, {uid: u.uid, nome: (d.name || u.displayName || u.email || "").slice(0, 40),
+          matchId: limpaId(matchId), dia, mes: dia.slice(0, 7), kick: new Date(kickISO), h, a,
+          pts: 0, pontuado: false, createdAt: F.serverTimestamp(), updatedAt: F.serverTimestamp()});
+      },
+      pontuar: (matchId, pts) => F.updateDoc(F.doc(db, "bolao", docId(matchId)),
+        {pts, pontuado: true, updatedAt: F.serverTimestamp()}).catch(() => {}),
+      ranking: async () => {
+        const mes = hoje.slice(0, 7);
+        const s = await F.getDocs(F.query(F.collection(db, "bolao"), F.where("mes", "==", mes)));
+        const por = new Map();
+        s.docs.forEach(x => {
+          const v = x.data(), k = v.uid;
+          const o = por.get(k) || {uid: k, nome: v.nome || "Sem nome", pts: 0, jogos: 0, exatos: 0};
+          o.pts += (+v.pts || 0); o.jogos++; if ((+v.pts || 0) >= 5) o.exatos++;
+          if (v.nome) o.nome = v.nome;
+          por.set(k, o);
+        });
+        return [...por.values()].sort((x, y) => y.pts - x.pts || y.exatos - x.exatos).map((x, i) => ({...x, pos: i + 1, eu: x.uid === u.uid}));
+      }
+    };
     const bump = (field) => {
       const inc = F.increment(1), now = F.serverTimestamp();
       F.updateDoc(ref, {[field]: inc, lastSeen: now}).catch(() => {});
       F.setDoc(F.doc(db, "users", u.uid, "days", today()), {[field]: inc, date: today(), last: now}, {merge: true}).catch(() => {});
     };
     window.track = kind => { if (["games", "bets", "tickets"].includes(kind)) bump(kind); };
+    window.palClick = id => { if (id) F.updateDoc(F.doc(db, "tickets", String(id)), {clicks: F.increment(1)}).catch(() => {}); };
+    // Só o administrador pode montar os bilhetes do dia direto pelo app.
+    window.palIsAdmin = souAdmin(u);
+    window.palSalvarBilhetes = async (lista) => {
+      for (const t of lista) {
+        await F.addDoc(F.collection(db, "tickets"), {...t, clicks: 0,
+          createdAt: F.serverTimestamp(), updatedAt: F.serverTimestamp(), by: u.email || ""});
+      }
+    };
     let opened = false; try { opened = !!sessionStorage.getItem("pl-open"); } catch (e) {}
     if (!opened) { try { sessionStorage.setItem("pl-open", "1"); } catch (e) {} bump("opens"); }
     else F.updateDoc(ref, {lastSeen: F.serverTimestamp()}).catch(() => {});
@@ -241,6 +326,26 @@ async function start() {
       if (watchTickets.day !== today()) watchTickets();
     }, 5 * 60000);
     watchTickets();
+    watchOut();
+    watchCasas();
+    // Medição de acertos: grava os palpites antes do apito e o resultado depois.
+    const calId = id => String(id).replace(/[^A-Za-z0-9_-]/g, "");
+    window.palCalibra = {
+      registrar: (id, dados) => F.setDoc(F.doc(db, "calibra", calId(id)), {
+        matchId: calId(id), jogo: String(dados.jogo || "").slice(0, 60), dia: dados.dia, mes: String(dados.dia).slice(0, 7),
+        liga: String(dados.liga || "").slice(0, 40), slug: String(dados.slug || "").slice(0, 60), kick: new Date(dados.kick),
+        picks: (dados.picks || []).slice(0, 5).map(x => ({mk: String(x.mk).slice(0, 40), conf: +x.conf || 0})),
+        placar: null, acertos: [], avaliado: false, criadoEm: F.serverTimestamp()
+      }).catch(() => {}),
+      pendentes: async (desde) => {
+        const q = F.query(F.collection(db, "calibra"), F.where("avaliado", "==", false), F.where("dia", ">=", desde));
+        const s = await F.getDocs(q).catch(() => null);
+        return s ? s.docs.map(d => ({id: d.id, ...d.data()})) : [];
+      },
+      resolver: (id, placar, acertos) => F.updateDoc(F.doc(db, "calibra", calId(id)),
+        {placar, acertos, avaliado: true, updatedAt: F.serverTimestamp()}).catch(() => {})
+    };
+    window.palLoadCloud && window.palLoadCloud(d);
     window.dispatchEvent(new Event("resize"));
   };
 
@@ -262,6 +367,20 @@ async function start() {
     }).then(() => { try { sessionStorage.removeItem("pl-new"); } catch (e) {} });
   };
 
+  // Mantém a lista de administradores atualizada (documento config/admins).
+  const ouvirAdmins = () => {
+    if (unsubAdm) return;
+    unsubAdm = F.onSnapshot(F.doc(db, "config", "admins"), s => {
+      const d = s.data() || {};
+      adminsExtra = (Array.isArray(d.emails) ? d.emails : []).map(e => String(e).toLowerCase());
+      const u = auth.currentUser;
+      if (u && !document.body.classList.contains("locked")) {
+        window.palIsAdmin = souAdmin(u);
+        window.palRender && window.palRender();
+      }
+    }, () => {});
+  };
+
   loading();
   A.getRedirectResult(auth).catch(e => console.warn("Palpiteiro redirect", e && e.code));
   A.onAuthStateChanged(auth, async u => {
@@ -270,7 +389,8 @@ async function start() {
     document.body.classList.add("locked"); gate.hidden = false;
     loading();
     const ref = F.doc(db, "users", u.uid);
-    const isAdmin = admins.includes(String(u.email || "").toLowerCase());
+    ouvirAdmins();
+    const isAdmin = souAdmin(u);
     try {
       const snap = await F.getDoc(ref);
       if (!snap.exists()) await makeDoc(u);
@@ -285,7 +405,7 @@ async function start() {
         promoted = true;
         F.updateDoc(ref, {status: "approved"}).catch(() => {});
       }
-      if (d.status === "approved") { lastKey = "ok"; if (!opened) { opened = true; openApp(u); } return; }
+      if (d.status === "approved") { lastKey = "ok"; if (!opened) { opened = true; openApp(u, d); } return; }
       if (opened) { opened = false; closeApp(); }
       // só redesenha quando muda algo importante (não apaga o que a pessoa está digitando)
       const key = (d.status || "pending") + "|" + (d.whatsapp ? 1 : 0) + "|" + (d.name || "");

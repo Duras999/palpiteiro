@@ -1,22 +1,46 @@
 rules_version = '2';
 // Regras do Firestore do Palpiteiro.
-// Para adicionar o 2º administrador, inclua o e-mail na lista abaixo e no firebase-config.js.
+// O administrador principal está fixo aqui embaixo. Os outros administradores
+// são cadastrados no painel e ficam no documento config/admins.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function emailOk() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function dono() {
+      return emailOk() && request.auth.token.email in ['jorgeluizsilvasiqueira@gmail.com'];
+    }
+    function outrosAdmins() {
+      return exists(/databases/$(database)/documents/config/admins)
+        ? get(/databases/$(database)/documents/config/admins).data.get('emails', [])
+        : [];
+    }
     function isAdmin() {
-      return request.auth != null && request.auth.token.email_verified == true
-        && request.auth.token.email in ['jorgeluizsilvasiqueira@gmail.com'];
+      return dono() || (emailOk() && request.auth.token.email in outrosAdmins());
     }
     function isMe(uid) { return request.auth != null && request.auth.uid == uid; }
     function isApproved() {
       return request.auth != null
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'approved';
     }
-    // Campos que o próprio usuário pode mexer (uso do app e WhatsApp). Status só o admin muda.
+    // Campos que o próprio usuário pode mexer (uso do app, WhatsApp, favoritos,
+    // bilhete e sequência de dias). O status só o admin muda.
     function onlyUsageFields() {
       return request.resource.data.diff(resource.data).affectedKeys()
-        .hasOnly(['opens', 'games', 'bets', 'tickets', 'lastSeen', 'whatsapp']);
+        .hasOnly(['opens', 'games', 'bets', 'tickets', 'lastSeen', 'whatsapp',
+                  'favs', 'slip', 'streak', 'lastDay']);
+    }
+
+    // Lista de administradores. Só o dono mexe, para ninguém se promover
+    // nem tirar o dono de dentro.
+    match /config/admins {
+      allow read: if emailOk();
+      allow write: if dono();
+    }
+    match /config/{outro} {
+      allow read: if isAdmin() || isApproved();
+      allow write: if isAdmin();
     }
 
     match /users/{uid} {
@@ -36,9 +60,74 @@ service cloud.firestore {
     }
 
     // Bilhetes prontos do dia: o admin cadastra no painel, quem está aprovado só lê.
+    // Quem está aprovado também pode somar 1 no contador de cliques em "Apostar".
     match /tickets/{id} {
+      function soCliques() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])
+          && request.resource.data.clicks is int
+          && request.resource.data.clicks == resource.data.get('clicks', 0) + 1;
+      }
+      allow read: if isAdmin() || isApproved();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (isApproved() && soCliques());
+    }
+
+    // Casas de apostas que aparecem nos botões do app.
+    match /casas/{id} {
       allow read: if isAdmin() || isApproved();
       allow write: if isAdmin();
+    }
+
+    // Desfalques por time: o admin preenche no painel, quem está aprovado só lê.
+    match /desfalques/{id} {
+      allow read: if isAdmin() || isApproved();
+      allow write: if isAdmin();
+    }
+
+    // Medição de acertos: os palpites de um jogo são gravados ANTES do apito
+    // inicial e nunca mais mudam. O resultado só entra DEPOIS, uma única vez.
+    // É isso que impede alguém de "acertar" olhando o placar.
+    match /calibra/{id} {
+      allow read: if isAdmin() || isApproved();
+      allow create: if isApproved()
+        && request.resource.data.avaliado == false
+        && request.resource.data.placar == null
+        && request.time < request.resource.data.kick;
+      allow update: if isApproved()
+        && resource.data.avaliado == false
+        && request.time > resource.data.kick
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['placar', 'acertos', 'avaliado', 'updatedAt'])
+        && request.resource.data.avaliado == true;
+      allow delete: if isAdmin();
+    }
+
+    // Bolão: cada palpite de placar é um documento do próprio usuário.
+    // O palpite só pode ser criado ou mudado ANTES do jogo começar (campo kick),
+    // e os pontos só podem ser gravados DEPOIS, no máximo 5.
+    match /bolao/{id} {
+      function meu() { return request.auth != null && resource.data.uid == request.auth.uid; }
+      function placarOk(d) {
+        return d.h is int && d.h >= 0 && d.h <= 20 && d.a is int && d.a >= 0 && d.a <= 20;
+      }
+      allow read: if isAdmin() || isApproved();
+      allow create: if isApproved()
+        && request.resource.data.uid == request.auth.uid
+        && id == request.auth.uid + '__' + request.resource.data.matchId
+        && request.resource.data.pts == 0
+        && request.resource.data.pontuado == false
+        && request.resource.data.createdAt == request.time
+        && request.time < request.resource.data.kick
+        && placarOk(request.resource.data);
+      allow update: if meu() && (
+           (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['h', 'a', 'updatedAt'])
+             && request.time < resource.data.kick && placarOk(request.resource.data))
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pts', 'pontuado', 'updatedAt'])
+             && request.time > resource.data.kick
+             && request.resource.data.pts is int
+             && request.resource.data.pts >= 0 && request.resource.data.pts <= 5)
+      );
+      allow delete: if isAdmin();
     }
   }
 }

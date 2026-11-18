@@ -133,6 +133,34 @@
   .nx .where{font-size:11px;font-weight:700;color:var(--mut);background:var(--card2);padding:5px 9px;border-radius:99px;white-space:nowrap}
   .nonext{padding:12px 16px 14px;border-top:1px solid var(--line);color:var(--mut);font-size:13.5px}
   .bigadd{display:inline-block;margin-top:16px;padding:13px 24px;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-weight:800}
+  .fire{flex:none;display:flex;align-items:center;gap:4px;padding:7px 11px;border-radius:99px;background:rgba(255,154,61,.14);color:#ff9a3d;font-weight:800;font-size:13px}
+  .resumo{margin:0 16px 10px;background:linear-gradient(145deg,#15241c,#161b21 60%);border:1px solid #23402f;border-radius:18px;padding:13px 14px;display:flex;gap:10px;align-items:flex-start}
+  .resumo .rx{flex:1;font-size:13.5px;color:#cfd6dd;line-height:1.5}
+  .resumo b{color:var(--txt);font-size:15px;display:block;margin-bottom:3px}
+  .resumo .rc{color:var(--green);font-weight:700}
+  .resumo button{color:var(--mut);font-size:17px;padding:0 2px;line-height:1;flex:none}
+  .bl{background:var(--card);border-radius:18px;margin:10px 16px;padding:12px 13px}
+  .bl-h{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--mut);margin-bottom:9px}
+  .bl-h b{color:#cfd6dd;font-weight:600}
+  .bl-r{display:flex;flex-direction:column;gap:8px}
+  .bl-tm{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600}
+  .bl-tm .crest{flex:none;width:26px;height:26px}
+  .bl-tm span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bl-i{width:46px;height:44px;flex:none;text-align:center;font-size:17px;font-weight:800;background:var(--card2);border:1.5px solid var(--line);border-radius:12px;color:var(--txt);outline:0;-moz-appearance:textfield}
+  .bl-i::-webkit-outer-spin-button,.bl-i::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .bl-i:focus{border-color:var(--green)}
+  .bl-i.ok{border-color:var(--green);background:rgba(25,224,122,.08)}
+  .bl-x{color:var(--mut);font-size:13px;flex:none}
+  .bl-sc{width:46px;height:44px;flex:none;display:grid;place-items:center;font-size:17px;font-weight:800;background:var(--card2);border-radius:12px}
+  .bl-pt{margin-top:9px;text-align:center;font-size:12.5px;font-weight:700}
+  .rk{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;margin:8px 16px;padding:12px 14px}
+  .rk.eu{background:rgba(25,224,122,.1);border:1px solid rgba(25,224,122,.3)}
+  .rk .p{width:30px;font-size:16px;font-weight:800;color:var(--mut);text-align:center;flex:none}
+  .rk .p.m1{color:#ffd34d}.rk .p.m2{color:#cfd6dd}.rk .p.m3{color:#d9a066}
+  .rk .nm{flex:1;min-width:0;font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rk .nm small{display:block;color:var(--mut);font-size:12px;font-weight:500}
+  .rk .pt{font-size:19px;font-weight:800;color:var(--green);flex:none}
+  .rk .pt small{display:block;font-size:11px;color:var(--mut);font-weight:600;text-align:right}
   .search input{flex:1;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:16px}
   .chips{display:flex;gap:8px;margin-top:12px;overflow-x:auto;scrollbar-width:none}
   .chip{white-space:nowrap;padding:8px 14px;border-radius:99px;background:var(--card);font-weight:600;font-size:14px;color:var(--mut)}
@@ -227,12 +255,25 @@
   .slip-rsk{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;background:var(--card2);border-radius:14px;padding:11px 13px}
   .slip-rsk .ch{font-size:13px;color:var(--mut);text-align:right;line-height:1.3}
   .slip-rsk .ch b{display:block;font-size:19px;font-weight:800}
+  .dq{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .dq:last-of-type{border:0}
+  .dq .crest{flex:none}
+  .dq-n{font-weight:700;font-size:15px;margin-bottom:3px}
+  .dq-l{color:#cfd6dd;font-size:13.5px;line-height:1.5}
+  .dq-l em{color:var(--mut);font-style:normal}
+  .dq-av{display:flex;align-items:center;gap:9px;background:rgba(255,154,61,.1);border:1px solid rgba(255,154,61,.3);border-radius:14px;padding:11px 13px;margin-bottom:12px;color:#e8c49a;font-size:13px;line-height:1.4}
+  .dq-av b{color:#ff9a3d}
   .pick .why{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.45}
   .conf{display:flex;align-items:center;gap:10px;margin-top:10px}
   .bar{flex:1;height:8px;background:#2a323c;border-radius:99px;overflow:hidden}
   .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green2),var(--green))}
   .pct{font-weight:800;font-size:14px;color:var(--green);width:42px;text-align:right}
   .add{margin-top:12px;width:100%;padding:11px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
+  .pick-a{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .pick-a .add{margin-top:0;flex:1 1 140px;min-width:0}
+  .odd-b{flex:1 1 112px;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;
+         background:rgba(255,211,77,.12);color:var(--yel);font-weight:700;font-size:14px;text-decoration:none;text-align:center}
+  .odd-b svg{width:15px;height:15px;flex:none}
   .add.in{background:var(--green);color:#04210f}
   .gen{width:100%;padding:15px;border-radius:16px;background:linear-gradient(135deg,var(--green),var(--green2));color:#04210f;font-weight:800;font-size:16px;margin-top:6px}
   .thinking{display:flex;align-items:center;gap:10px;color:var(--mut);padding:18px 4px}
@@ -281,6 +322,15 @@
   .ready-btn{display:block;text-align:center;text-decoration:none;margin-top:12px}
   .ready-note{color:var(--mut);font-size:12px;text-align:center;line-height:1.5}
   .ready-note a{color:var(--green)}
+  .gerar{margin:4px 16px 14px;background:var(--card);border:1px dashed #3a4650;border-radius:18px;padding:14px}
+  .gerar h4{font-size:14px;font-weight:800;margin-bottom:4px}
+  .gerar p{color:var(--mut);font-size:12.5px;line-height:1.45;margin-bottom:11px}
+  .gerar .gen{margin-top:0}
+  .gerar .g2{display:flex;gap:8px}
+  .gerar .g2 .gen{flex:1}
+  .gerar .ghost{flex:none;padding:0 18px;border-radius:16px;background:var(--card2);color:var(--mut);font-weight:700}
+  .quieto{background:var(--card);border-radius:16px;padding:16px;text-align:center;color:var(--mut);font-size:14px;line-height:1.5}
+  .quieto b{display:block;color:var(--txt);font-size:15px;margin-bottom:5px}
 </style>
 </head>
 <body class="locked">
@@ -289,8 +339,10 @@
 <nav class="nav">
   <button id="nav-jogos" class="on" onclick="go('')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 4.5h-5L8 10z"/></svg>Jogos</button>
+  <button id="nav-bolao" onclick="go('bolao')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4v1a3 3 0 003 3M17 6h3v1a3 3 0 01-3 3"/><path d="M10 15h4M9 20h6M12 14v6"/></svg>Bolão</button>
   <button id="nav-bilhete" onclick="go('bilhete')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v4a2 2 0 000 4v4H4v-4a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>Meu bilhete<span class="badge" id="bdg" hidden>0</span></button>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v4a2 2 0 000 4v4H4v-4a2 2 0 000-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>Bilhete<span class="badge" id="bdg" hidden>0</span></button>
 </nav>
 <div class="toast" id="toast"></div>
 <div class="ptr" id="ptr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></div>
@@ -313,6 +365,28 @@ const TZ = "America/Sao_Paulo";
 /* ---------- bilhetes prontos (código de reserva da Bingo em Casa) ---------- */
 const CASA = "https://www.bingoemcasa17.com/pt-BR/sportsbook?btBookingCode=";
 const AFILIADO = "https://a.bingoem.casa/t/NTk2OTEwXzM=";
+/* Para onde o botão "Ver odd" manda a pessoa, na Bingo em Casa.
+   A odd real e atualizada é a de lá, por isso o app não mostra número próprio.
+   Quando descobrirmos o endereço de um jogo específico no site da casa, basta
+   escrever o modelo aqui, com {q} no lugar do nome dos times. Exemplo:
+   const CASA_JOGO = "https://www.bingoemcasa17.com/pt-BR/sportsbook?search={q}"; */
+const CASA_JOGO = "";
+const CASA_SPORTS = "https://www.bingoemcasa17.com/pt-BR/sportsbook";
+const linkCasa = m => CASA_JOGO
+  ? CASA_JOGO.replace("{q}", encodeURIComponent(short(m.home) + " " + short(m.away)))
+  : CASA_SPORTS;
+/* Casas cadastradas no painel. Sem nenhuma cadastrada, fica a Bingo em Casa. */
+const casasAtivas = () => {
+  const c = (window.palCasas || []).filter(x => x && x.link).slice(0, 4);
+  return c.length ? c : [{id: "", nome: "Bingo em Casa", curto: "", link: ""}];
+};
+const linkDaCasa = (c, m) => c.link
+  ? String(c.link).replace("{q}", encodeURIComponent(short(m.home) + " " + short(m.away)))
+  : linkCasa(m);
+const nomeCurto = c => String(c.curto || c.nome || "").trim().split(/\s+/)[0] || "casa";
+const ICONE_LINK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>`;
+const botoesCasas = m => casasAtivas().map((c, i) =>
+  `<a class="odd-b" href="${esc(linkDaCasa(c, m))}" target="_blank" rel="noopener" data-casa="${esc(c.id || "")}" onclick="window.track&&window.track('bets')">${ICONE_LINK}${casasAtivas().length > 1 ? esc(nomeCurto(c)) : "Ver odd"}</a>`).join("");
 // Os bilhetes do dia são cadastrados no painel do administrador (aba Bilhetes).
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
@@ -321,8 +395,130 @@ function readyView() {
   return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
-      `<a class="gen ready-btn" href="${b.codigo ? CASA + encodeURIComponent(b.codigo) : AFILIADO}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets')">Apostar</a></div>`).join("") +
+      `<a class="gen ready-btn" href="${b.codigo ? (b.casaLink ? String(b.casaLink).split("{q}")[0] + encodeURIComponent(b.codigo) : CASA + encodeURIComponent(b.codigo)) : (b.casaLink ? String(b.casaLink).replace("{q}", "") : AFILIADO)}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">Apostar</a></div>`).join("") +
     `<p class="ready-note">O botão abre a Bingo em Casa com o bilhete já montado. As odds podem mudar até o jogo.<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
+}
+
+/* ---------- medir se a confiança é verdade ----------
+   O palpite é gravado ANTES do apito inicial e o resultado só entra depois.
+   Assim dá para comparar, no painel, o que o app prometeu com o que aconteceu. */
+const slugDoJogo = m => (m && m.url || "").split("/").filter(Boolean)[2] || "";
+function conferirMercado(mk, placar, m) {
+  const h = +placar.h, a = +placar.a;
+  if (!Number.isFinite(h) || !Number.isFinite(a)) return null;
+  const hn = short(m.home), an = short(m.away), tot = h + a;
+  if (mk === "Mais de 2.5 gols") return tot > 2.5;
+  if (mk === "Menos de 2.5 gols") return tot < 2.5;
+  if (mk === "Ambas marcam: Sim") return h > 0 && a > 0;
+  if (mk === "Ambas marcam: Não") return !(h > 0 && a > 0);
+  let r;
+  if ((r = /^Vitória do (.+)$/.exec(mk))) return r[1] === hn ? h > a : r[1] === an ? a > h : null;
+  if ((r = /^(.+) ou empate$/.exec(mk))) return r[1] === hn ? h >= a : r[1] === an ? a >= h : null;
+  if ((r = /^(.+) marca: Sim$/.exec(mk))) return r[1] === hn ? h > 0 : r[1] === an ? a > 0 : null;
+  return null;
+}
+function registrarPalpites(id, m, lista) {
+  if (!window.palCalibra || !lista || !lista.length) return;
+  if (new Date(m.time).getTime() <= Date.now()) return;   // já começou, não vale registrar
+  window.palCalibra.registrar(id, {
+    jogo: `${short(m.home)} x ${short(m.away)}`, dia: localDay(new Date(m.time)),
+    liga: m.lname || m.competition || "", kick: m.time, slug: slugDoJogo(m),
+    picks: lista.map(p => ({mk: p.mk, conf: p.conf}))
+  });
+}
+let calibraRodou = false;
+async function resolverCalibra() {
+  if (calibraRodou || !window.palCalibra) return;
+  calibraRodou = true;
+  try {
+    const pend = await window.palCalibra.pendentes(dayOf(-4));
+    for (const c of pend.slice(0, 20)) {
+      if (!c.kick || (c.kick.toMillis ? c.kick.toMillis() : 0) > Date.now()) continue;
+      let m = games[c.matchId];
+      if (!m || m.status !== "finished") {
+        if (!c.slug) continue;
+        const d = await getJSON(`${API}/match/?sport=football&slug=${encodeURIComponent(c.slug)}`, 30).catch(() => null);
+        m = d && d.match;
+        if (!m || m.status !== "finished") continue;
+      }
+      const placar = {h: +m.home_score, a: +m.away_score};
+      const acertos = (c.picks || []).map(x => conferirMercado(x.mk, placar, m));
+      if (!acertos.length || acertos.some(x => x === null)) continue;
+      await window.palCalibra.resolver(c.matchId, placar, acertos);
+      await new Promise(r => setTimeout(r, 150));
+    }
+  } catch (e) { console.warn("Palpiteiro: medição", e); }
+}
+
+/* ---------- montar os bilhetes do dia (só administrador) ---------- */
+let gerados = null, gerando = "";
+async function gerarBilhetes() {
+  if (gerando) return;
+  const dia = dayOf(0);
+  try {
+    gerando = "Buscando os jogos de hoje…"; render(false, true);
+    if (!dayCache[dia]) dayCache[dia] = {t: Date.now(), d: await loadDay(0)};
+    const jogos = dayCache[dia].d.flatMap(g => g.ms)
+      .filter(m => m.status === "upcoming" && new Date(m.time).getTime() > Date.now())
+      .sort((a, b) => a.time.localeCompare(b.time)).slice(0, 12);
+    if (!jogos.length) { gerando = ""; toast("Nenhum jogo por começar hoje"); return render(false, true); }
+    const melhores = [];
+    for (let i = 0; i < jogos.length; i++) {
+      const m = jogos[i], id = mid(m);
+      gerando = `Analisando os jogos… ${i + 1} de ${jogos.length}`; render(false, true);
+      let A = null;
+      try { A = await analyze(id); } catch (e) {}
+      const p = A && A.picks && A.picks[0];
+      if (p) melhores.push({conf: p.conf, jogo: `${short(m.home)} x ${short(m.away)}`, hora: hhmm(m.time), mercado: p.mk});
+      await new Promise(r => setTimeout(r, 120));
+    }
+    melhores.sort((a, b) => b.conf - a.conf);
+    if (!melhores.length) { gerando = ""; toast("Nenhum palpite forte hoje"); return render(false, true); }
+    // 1 seleção = mais seguro, 5 seleções = mais arriscado. O nível sai da conta, não do chute.
+    const lista = [];
+    for (let n = 1; n <= Math.min(5, melhores.length); n++) {
+      const sel = melhores.slice(0, n);
+      const ch = chanceBilhete(sel), r = risco(ch);
+      if (lista.some(x => x.tipo === r.lbl)) continue;
+      lista.push({date: dia, tipo: r.lbl, odd: "", codigo: "", order: RISCOS.findIndex(x => x.lbl === r.lbl),
+        sel: sel.map(x => ({jogo: x.jogo, hora: x.hora, mercado: x.mercado})), chance: ch});
+    }
+    gerados = lista; gerando = "";
+  } catch (e) { console.error(e); gerando = ""; toast("Não deu para montar agora"); }
+  render(false, true);
+}
+async function salvarGerados() {
+  if (!gerados || !window.palSalvarBilhetes) return;
+  const lista = gerados.map(({chance, ...t}) => t);
+  gerando = "Salvando…"; render(false, true);
+  try { await window.palSalvarBilhetes(lista); gerados = null; gerando = ""; toast(`${lista.length} bilhetes no ar`); }
+  catch (e) { console.error(e); gerando = ""; toast("Não deu para salvar"); }
+  render(false, true);
+}
+const AUTOKEY = "pal-autogera";
+function talvezGerarSozinho() {
+  if (!window.palIsAdmin || gerando || gerados) return;
+  const hoje = dayOf(0);
+  let feito = ""; try { feito = localStorage.getItem(AUTOKEY) || ""; } catch (e) {}
+  if (feito === hoje) return;
+  const jaTem = (window.palTickets || []).some(b => b && b.date === hoje && Array.isArray(b.sel) && b.sel.length);
+  if (jaTem) { store(AUTOKEY, hoje); return; }
+  store(AUTOKEY, hoje);
+  setTimeout(() => gerarBilhetes(), 400);
+}
+function gerarView() {
+  if (!window.palIsAdmin) return "";
+  if (gerando) return `<div class="gerar"><div class="thinking" style="padding:4px 0"><span class="dots"><i></i><i></i><i></i></span> ${esc(gerando)}</div></div>`;
+  if (gerados) return `<div class="gerar"><h4>Bilhetes montados — confira antes de publicar</h4>
+    <p>Um bilhete por nível de risco, feito com os palpites mais fortes de hoje. Depois de salvar, abra o painel para colocar o código de reserva de cada um.</p>
+    ${gerados.map(b => { const r = risco(b.chance); return `<div class="ready" style="margin-bottom:10px">
+      <div class="ready-head">${rskTag(r)}<span class="ready-odd">${b.chance}% de bater</span></div>
+      ${b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)} · ${esc(x.hora)}</div><div class="m">${esc(x.mercado)}</div></div>`).join("")}</div>`; }).join("")}
+    <div class="g2"><button class="gen" onclick="salvarGerados()">Publicar ${gerados.length} bilhete${gerados.length > 1 ? "s" : ""}</button>
+      <button class="ghost" onclick="gerados=null;render(false,true)">Cancelar</button></div></div>`;
+  return `<div class="gerar"><h4>Montar os bilhetes de hoje</h4>
+    <p>O Palpiteiro analisa os jogos de hoje e monta um bilhete para cada nível de risco, do muito seguro ao muito arriscado. Você confere antes de publicar.</p>
+    <button class="gen" onclick="gerarBilhetes()">Montar bilhetes do dia</button></div>`;
 }
 
 /* ---------- cache simples ---------- */
@@ -394,7 +590,7 @@ let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"
 if (!Array.isArray(slip)) slip = [];
 // tira do bilhete os jogos que já acabaram faz tempo
 slip = slip.filter(x => x && x.id && x.mk && !(x.t && Date.now() - new Date(x.t).getTime() > 12 * 3600000));
-const saveSlip = () => { store("iag-slip2", JSON.stringify(slip)); badge(); };
+const saveSlip = (local) => { store("iag-slip2", JSON.stringify(slip)); badge(); if (!local && window.palSave) window.palSave({slip}); };
 const whenLabel = x => {
   if (!x.t) return x.when || "";
   const d = new Date(x.t), day = localDay(d), now = Date.now();
@@ -402,6 +598,37 @@ const whenLabel = x => {
     d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"});
   return lbl + " " + hhmm(x.t);
 };
+/* ---------- a conta manda: favoritos e bilhete seguem a pessoa de aparelho em aparelho ---------- */
+window.palLoadCloud = (d) => {
+  d = d || {};
+  const naConta = Array.isArray(d.favs), temAqui = favs !== null && favs.length;
+  if (naConta && (favs === null || (!favs.length && d.favs.length))) { favs = d.favs.slice(0, 40); saveFavs(true); }
+  else if (!naConta && favs !== null) saveFavs(true) || (window.palSave && window.palSave({favs}));
+  const sc = Array.isArray(d.slip) ? d.slip.filter(x => x && x.id && x.mk) : null;
+  if (sc && sc.length && !slip.length) { slip = sc; saveSlip(true); }
+  else if (slip.length && (!sc || !sc.length) && window.palSave) window.palSave({slip});
+  nextCache = null;
+  render(false, true);
+};
+
+/* ---------- desfalques (cadastrados no painel) ---------- */
+function desfalquesDe(nome, slug) {
+  const k = tkey(nome);
+  const d = (window.palOut || []).find(x => x && ((slug && x.slug === slug) || tkey(x.time) === k));
+  const lista = (d && Array.isArray(d.lista) ? d.lista : []).filter(x => x && x.nome);
+  return lista.length ? lista : null;
+}
+function caixaDesfalques(m, A) {
+  const h = desfalquesDe(m.home, A.H.slug), a = desfalquesDe(m.away, A.A.slug);
+  if (!h && !a) return "";
+  const bloco = (nome, logo, l) => l ? `<div class="dq">${crest(nome, logo)}<div><div class="dq-n">${esc(short(nome))}</div>
+    <div class="dq-l">${l.map(x => `${esc(x.nome)}${x.motivo ? ` <em>· ${esc(x.motivo)}</em>` : ""}`).join("<br>")}</div></div></div>` : "";
+  return `<div class="box fade"><h3>Desfalques</h3>${bloco(m.home, m.home_logo, h)}${bloco(m.away, m.away_logo, a)}
+    <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Informado pelo Palpiteiro. Não entra na conta da confiança dos palpites.</p></div>`;
+}
+const avisoDesfalques = (m, A) => (desfalquesDe(m.home, A.H.slug) || desfalquesDe(m.away, A.A.slug))
+  ? `<div class="dq-av">⚠️<span>Esse jogo tem <b>desfalques</b>. A confiança abaixo olha só os resultados, então confira a lista na aba Sequências antes de apostar.</span></div>` : "";
+
 /* ---------- nível de risco (do verde ao vermelho) ---------- */
 const RISCOS = [
   {lbl: "Muito seguro",    min: 78, c: "#19e07a"},
@@ -429,6 +656,7 @@ const chanceBilhete = list => Math.round(list.reduce((a, s) => a * (s.conf / 100
 const FAVKEY = "pal-favs";
 let favs = null; try { favs = JSON.parse(localStorage.getItem(FAVKEY) || "null"); } catch (e) {}
 if (!Array.isArray(favs)) favs = null; // null = a pessoa ainda não passou pela escolha
+const saveFavs = (local) => { store(FAVKEY, JSON.stringify(favs || [])); favIndex(); if (!local && window.palSave) window.palSave({favs: favs || []}); };
 const STAR = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.25 4.1 1 5.8L12 16.9l-5.25 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>`;
 const tkey = n => slugify(short(n || ""));
 let favIdx = new Set();
@@ -504,12 +732,12 @@ async function openFavs(first) {
     favCount();
   };
   $("#fav-skip").onclick = () => {
-    if (favFirst && !favs) { favs = []; store(FAVKEY, "[]"); }
+    if (favFirst && !favs) { favs = []; saveFavs(); }
     closeFavs();
   };
   $("#fav-ok").onclick = () => {
-    favs = [...favDraft.values()].map(t => ({slug: t.slug, name: t.name, logo: t.logo || ""}));
-    store(FAVKEY, JSON.stringify(favs)); favIndex();
+    favs = [...favDraft.values()].slice(0, 40).map(t => ({slug: t.slug, name: t.name, logo: t.logo || ""}));
+    saveFavs();
     closeFavs();
     if (favs.length) toast(favs.length === 1 ? "Time salvo" : `${favs.length} times salvos`);
     render(false, true);
@@ -572,7 +800,7 @@ async function teamForm(name) {
     if (hit) { slug = hit.slug; t = await getJSON(`${API}/team/?slug=${slug}`, 360).catch(() => null); }
   }
   const fin = ((t && t.matches) || []).filter(m => m.status === "finished" && m.home_score != null)
-    .sort((a, b) => b.time.localeCompare(a.time)).slice(0, 6);
+    .sort((a, b) => b.time.localeCompare(a.time)).slice(0, 10);
   const res = fin.map(m => {
     const home = m.home === (t.team?.name || name) || slugify(m.home) === slug;
     const gf = +(home ? m.home_score : m.away_score), ga = +(home ? m.away_score : m.home_score);
@@ -611,34 +839,131 @@ function sequences(team, logo, s) {
   if ((n - s.btts) / n >= .67) add("Ambos não marcam", `${n - s.btts}/${n}`, (n - s.btts) / n * 6);
   return L;
 }
-function picks(m, H, A) {
-  const h = H.st, a = A.st, P = [];
-  if (!h.n || !a.n) return P;
+/* O jogo de ontem diz mais que o de dois meses atrás: cada jogo mais antigo pesa menos. */
+const DECAI = 0.85;
+const mix = (a, b, p) => a * (1 - p) + b * p;
+function wstats(res) {
+  if (!res || !res.length) return null;
+  let W = 0, o25 = 0, btts = 0, scored = 0, conceded = 0, pts = 0, gf = 0, ga = 0;
+  res.forEach((x, i) => {
+    const w = Math.pow(DECAI, i);
+    W += w;
+    if (x.gf + x.ga > 2.5) o25 += w;
+    if (x.gf > 0 && x.ga > 0) btts += w;
+    if (x.gf > 0) scored += w;
+    if (x.ga > 0) conceded += w;
+    pts += w * (x.r === "V" ? 3 : x.r === "E" ? 1 : 0);
+    gf += w * x.gf; ga += w * x.ga;
+  });
+  return {n: res.length, o25: o25 / W, btts: btts / W, scored: scored / W, conceded: conceded / W, ppg: pts / W, gf: gf / W, ga: ga / W};
+}
+/* Time pode ser ótimo em casa e ruim fora: separa por mando, mas sem jogar fora o resto
+   (a amostra só de casa, ou só de fora, é pequena demais sozinha). */
+function venueStats(res, emCasa) {
+  const todos = wstats(res);
+  if (!todos) return null;
+  const sub = (res || []).filter(x => !!x.home === emCasa);
+  const v = wstats(sub);
+  const usaMando = !!v && v.n >= 3;
+  const base = usaMando ? sub : res;
+  const cnt = {
+    n: base.length,
+    o25: base.filter(x => x.gf + x.ga > 2.5).length,
+    btts: base.filter(x => x.gf > 0 && x.ga > 0).length,
+    scored: base.filter(x => x.gf > 0).length,
+    conceded: base.filter(x => x.ga > 0).length
+  };
+  const out = {n: todos.n, vn: v ? v.n : 0, usaMando, cnt};
+  const p = usaMando ? Math.min(0.55, v.n * 0.14) : 0;
+  ["o25", "btts", "scored", "conceded", "ppg", "gf", "ga"].forEach(k => out[k] = p ? mix(todos[k], v[k], p) : todos[k]);
+  return out;
+}
+/* Confronto direto: como costuma ser o jogo entre esses dois. */
+function h2hStats(h2h, mandante) {
+  const ms = ((h2h && h2h.matches) || []).filter(x => x.home_score != null && x.away_score != null)
+    .sort((a, b) => String(b.time).localeCompare(String(a.time))).slice(0, 5);
+  if (!ms.length) return null;
+  let o25 = 0, btts = 0, hw = 0, dr = 0, aw = 0;
+  for (const x of ms) {
+    const hs = +x.home_score, as = +x.away_score;
+    if (hs + as > 2.5) o25++;
+    if (hs > 0 && as > 0) btts++;
+    const souMandante = tkey(x.home) === tkey(mandante);
+    const g1 = souMandante ? hs : as, g2 = souMandante ? as : hs;
+    if (g1 > g2) hw++; else if (g1 === g2) dr++; else aw++;
+  }
+  const n = ms.length;
+  return {n, o25: o25 / n, btts: btts / n, hw, dr, aw};
+}
+/* Campanha na tabela: estabiliza o palpite quando os últimos jogos enganam. */
+function tableStats(table, slug, nome) {
+  for (const g of (table && table.tables) || []) for (const r of g.rows || []) {
+    if ((slug && r.team_slug === slug) || (nome && tkey(r.team) === tkey(nome))) {
+      const j = +r.p || 0;
+      if (j < 4) return null;
+      return {ppg: (+r.pts || 0) / j, pos: +r.pos || 0, j};
+    }
+  }
+  return null;
+}
+const forca = (st, tb) => tb ? mix(st.ppg, tb.ppg, 0.35) : st.ppg;
+
+/* Quantos jogos passados são o mínimo para o palpite valer alguma coisa.
+   Time recém-promovido, começo de campeonato ou copa entre divisões diferentes
+   caem aqui — e nesses casos é melhor não falar nada do que chutar com cara de certeza. */
+const MIN_JOGOS = 4;
+function semDados(H, A) {
+  const nh = (H.res || []).length, na = (A.res || []).length;
+  if (nh < MIN_JOGOS || na < MIN_JOGOS) return {nh, na};
+  return null;
+}
+function picks(m, H, A, h2h, table) {
+  const P = [];
+  if (semDados(H, A)) return P;
+  const h = venueStats(H.res, true), a = venueStats(A.res, false);
+  if (!h || !a || !h.n || !a.n) return P;
   const hn = short(m.home), an = short(m.away);
-  const pct = (x, n) => x / n;
-  const o = (pct(h.o25, h.n) + pct(a.o25, a.n)) / 2;
-  const bt = (pct(h.btts, h.n) + pct(a.btts, a.n)) / 2;
-  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(86, Math.round(score))), why});
-  if (o >= .6) add("Mais de 2.5 gols", 40 + o * 50, `Teve mais de 2.5 gols em ${h.o25}/${h.n} jogos do ${hn} e ${a.o25}/${a.n} do ${an}.`);
-  if (o <= .4) add("Menos de 2.5 gols", 40 + (1 - o) * 50, `Teve menos de 2.5 gols em ${h.n - h.o25}/${h.n} jogos do ${hn} e ${a.n - a.o25}/${a.n} do ${an}.`);
-  if (bt >= .6) add("Ambas marcam: Sim", 40 + bt * 50, `Os dois marcaram em ${h.btts}/${h.n} jogos do ${hn} e ${a.btts}/${a.n} do ${an}.`);
-  if (bt <= .3) add("Ambas marcam: Não", 40 + (1 - bt) * 45, `Só ${h.btts}/${h.n} jogos do ${hn} e ${a.btts}/${a.n} do ${an} tiveram gol dos dois lados.`);
-  const d = h.ppg - a.ppg;
-  if (d >= 1.3) add(`Vitória do ${hn}`, 50 + d * 14, `${hn} faz ${h.ppg.toFixed(1)} pontos por jogo e ${an} só ${a.ppg.toFixed(1)}, e o mando é do ${hn}.`);
-  else if (d >= .6) add(`${hn} ou empate`, 55 + d * 18, `${hn} vive momento melhor (${h.ppg.toFixed(1)} x ${a.ppg.toFixed(1)} pontos por jogo) e joga em casa.`);
-  if (d <= -1.0) add(`${an} ou empate`, 50 + -d * 16, `${an} está bem melhor (${a.ppg.toFixed(1)} x ${h.ppg.toFixed(1)} pontos por jogo), mesmo fora de casa.`);
-  if (pct(h.scored, h.n) >= .8 && pct(a.conceded, a.n) >= .65)
-    add(`${hn} marca: Sim`, 40 + (pct(h.scored, h.n) + pct(a.conceded, a.n)) * 25, `${hn} marcou em ${h.scored}/${h.n} e ${an} sofreu gol em ${a.conceded}/${a.n}.`);
-  if (pct(a.scored, a.n) >= .8 && pct(h.conceded, h.n) >= .65)
-    add(`${an} marca: Sim`, 38 + (pct(a.scored, a.n) + pct(h.conceded, h.n)) * 25, `${an} marcou em ${a.scored}/${a.n} e ${hn} sofreu gol em ${h.conceded}/${h.n}.`);
+  const hh = h2hStats(h2h, m.home);
+  const th = tableStats(table, H.slug, m.home), ta = tableStats(table, A.slug, m.away);
+  const ondeH = h.usaMando ? `${h.cnt.n} jogos em casa` : `${h.cnt.n} últimos jogos`;
+  const ondeA = a.usaMando ? `${a.cnt.n} jogos fora` : `${a.cnt.n} últimos jogos`;
+
+  let o = (h.o25 + a.o25) / 2, bt = (h.btts + a.btts) / 2;
+  const usaH2H = hh && hh.n >= 3;
+  if (usaH2H) { o = mix(o, hh.o25, .22); bt = mix(bt, hh.btts, .22); }
+  const nO = usaH2H ? Math.round(hh.o25 * hh.n) : 0, nB = usaH2H ? Math.round(hh.btts * hh.n) : 0;
+  const txtO = usaH2H ? ` Nos ${hh.n} confrontos diretos, ${nO} passaram de 2.5 gols.` : "";
+  const txtU = usaH2H ? ` Nos ${hh.n} confrontos diretos, ${hh.n - nO} ficaram abaixo de 2.5.` : "";
+  const txtB = usaH2H ? ` Nos ${hh.n} confrontos diretos, ${nB} tiveram gol dos dois lados.` : "";
+  const txtN = usaH2H ? ` Nos ${hh.n} confrontos diretos, ${hh.n - nB} não tiveram gol dos dois lados.` : "";
+  const txtR = usaH2H ? ` Nos ${hh.n} confrontos diretos: ${hh.hw} do ${hn}, ${hh.dr} empates e ${hh.aw} do ${an}.` : "";
+  const tab = (tb, nome) => tb ? ` Na tabela, ${nome} está em ${tb.pos}º com ${tb.ppg.toFixed(1)} pontos por jogo.` : "";
+
+  const fh = forca(h, th), fa = forca(a, ta), d = fh - fa;
+  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(88, Math.round(score))), why});
+
+  if (o >= .6) add("Mais de 2.5 gols", 40 + o * 50, `Mais de 2.5 gols em ${h.cnt.o25} dos ${ondeH} do ${hn} e ${a.cnt.o25} dos ${ondeA} do ${an}.` + txtO);
+  if (o <= .4) add("Menos de 2.5 gols", 40 + (1 - o) * 50, `Menos de 2.5 gols em ${h.cnt.n - h.cnt.o25} dos ${ondeH} do ${hn} e ${a.cnt.n - a.cnt.o25} dos ${ondeA} do ${an}.` + txtU);
+  if (bt >= .6) add("Ambas marcam: Sim", 40 + bt * 50, `Os dois marcaram em ${h.cnt.btts} dos ${ondeH} do ${hn} e ${a.cnt.btts} dos ${ondeA} do ${an}.` + txtB);
+  if (bt <= .3) add("Ambas marcam: Não", 40 + (1 - bt) * 45, `Só ${h.cnt.btts} dos ${ondeH} do ${hn} e ${a.cnt.btts} dos ${ondeA} do ${an} tiveram gol dos dois lados.` + txtN);
+  if (d >= 1.2) add(`Vitória do ${hn}`, 50 + d * 14, `${hn} vale ${fh.toFixed(1)} pontos por jogo em casa e ${an} ${fa.toFixed(1)} fora, juntando forma recente e campanha.` + tab(th, hn) + txtR);
+  else if (d >= .55) add(`${hn} ou empate`, 55 + d * 18, `${hn} está melhor contando o mando: ${fh.toFixed(1)} contra ${fa.toFixed(1)} pontos por jogo.` + tab(th, hn) + txtR);
+  if (d <= -.9) add(`${an} ou empate`, 50 + -d * 16, `${an} está melhor mesmo jogando fora: ${fa.toFixed(1)} contra ${fh.toFixed(1)} pontos por jogo.` + tab(ta, an) + txtR);
+  if (h.scored >= .8 && a.conceded >= .65)
+    add(`${hn} marca: Sim`, 40 + (h.scored + a.conceded) * 25, `${hn} marcou em ${h.cnt.scored} dos ${ondeH} e ${an} sofreu gol em ${a.cnt.conceded} dos ${ondeA}.`);
+  if (a.scored >= .8 && h.conceded >= .65)
+    add(`${an} marca: Sim`, 38 + (a.scored + h.conceded) * 25, `${an} marcou em ${a.cnt.scored} dos ${ondeA} e ${hn} sofreu gol em ${h.cnt.conceded} dos ${ondeH}.`);
   return P.sort((x, y) => y.conf - x.conf).slice(0, 3);
 }
-function winProb(H, A) {
-  const r = (res, k) => res.length ? res.filter(x => x.r === k).length / res.length : 1 / 3;
-  let ph = (r(H.res, "V") + r(A.res, "D")) / 2 * 1.12, pa = (r(A.res, "V") + r(H.res, "D")) / 2 * 0.92, pd = (r(H.res, "E") + r(A.res, "E")) / 2;
-  pd = Math.max(pd, .18); ph = Math.max(ph, .05); pa = Math.max(pa, .05);
-  const t = ph + pd + pa; let h = Math.round(ph / t * 100), a = Math.round(pa / t * 100);
-  return {h, d: 100 - h - a, a};
+function winProb(H, A, m, table) {
+  const h = venueStats(H.res, true), a = venueStats(A.res, false);
+  if (!h || !a) return {h: 33, d: 34, a: 33};
+  const th = tableStats(table, H.slug, m && m.home), ta = tableStats(table, A.slug, m && m.away);
+  const d = (forca(h, th) + .30) - forca(a, ta);   // +0,30 = vantagem de jogar em casa
+  const pd = Math.max(.15, Math.min(.30, .28 - Math.abs(d) * .05));
+  const ph = (1 - pd) / (1 + Math.exp(-d * 1.1));
+  const hh = Math.round(ph * 100), aa = Math.round((1 - pd - ph) * 100);
+  return {h: hh, d: 100 - hh - aa, a: aa};
 }
 async function cardStats(T) {
   const one = async x => {
@@ -674,16 +999,18 @@ async function analyze(id) {
   if (analysis[id]) return analysis[id];
   const m = games[id];
   const [H, A] = await Promise.all([teamForm(m.home), teamForm(m.away)]);
-  H.st = stats(H.res); A.st = stats(A.res);
+  H.res6 = H.res.slice(0, 6); A.res6 = A.res.slice(0, 6);
+  H.st = stats(H.res6); A.st = stats(A.res6);
   const [h2h, table] = await Promise.all([
     getJSON(`${API}/h2h/?team1=${H.slug}&team2=${A.slug}`, 720).catch(() => null),
     m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null]);
   const seq = [...sequences(short(m.home), m.home_logo, H.st), ...sequences(short(m.away), m.away_logo, A.st)].sort((x, y) => y.k - x.k);
-  const R = analysis[id] = {H, A, h2h, table, cards: null, cardsBusy: true, seq, picks: picks(m, H, A)};
+  const R = analysis[id] = {H, A, h2h, table, cards: null, cardsBusy: true, seq, picks: picks(m, H, A, h2h, table)};
   Promise.all([cardStats(H).catch(() => null), cardStats(A).catch(() => null)]).then(([h, a]) => {
     R.cards = {h, a}; R.cardsBusy = false;
     if (location.hash.slice(1) === "jogo-" + id && tab === "seq") render(false, true);
   });
+  registrarPalpites(id, m, R.picks);
   return R;
 }
 
@@ -691,7 +1018,7 @@ async function analyze(id) {
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
 const acct = () => window.palUser ? `<p class="acct">${esc(window.palUser.email || "")}<button onclick="window.palSignOut&&window.palSignOut()">Sair da conta</button></p>` : "";
-const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
+const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="termos/" style="color:#5f6b77">Termos de uso e privacidade</a><br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
 function matchRow(m) {
@@ -703,13 +1030,35 @@ function matchRow(m) {
     <div class="teams"><div class="team">${crest(m.home, m.home_logo)}${nm(m.home)}</div><div class="team">${crest(m.away, m.away_logo)}${nm(m.away)}</div></div>
     ${sc}<span class="ia-tag">Palpiteiro</span></button>`;
 }
+const fogo = () => (window.palStreak || 0) >= 2 ? `<span class="fire" title="Dias seguidos abrindo o app">🔥 ${window.palStreak}</span>` : "";
+const RKEY = "pal-resumo";
+function fecharResumo() { try { store(RKEY, dayOf(0)); } catch (e) {} const el = document.querySelector(".resumo"); if (el) el.remove(); }
+function resumoView() {
+  let visto = ""; try { visto = localStorage.getItem(RKEY) || ""; } catch (e) {}
+  const hoje = dayOf(0);
+  if (visto === hoje || !window.palUser) return "";
+  const hora = +new Date().toLocaleString("en-US", {timeZone: TZ, hour: "2-digit", hour12: false});
+  const ola = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+  const nome = String((window.palUser.name || "").trim().split(/\s+/)[0] || "");
+  const c = dayCache[hoje];
+  const meus = (favs && favs.length && c) ? c.d.flatMap(g => g.ms).filter(favGame).length : 0;
+  const bil = (window.palTickets || []).filter(b => b && b.date === hoje && Array.isArray(b.sel) && b.sel.length).length;
+  const partes = [];
+  if (meus) partes.push(`<span class="rc">${meus} jogo${meus > 1 ? "s" : ""}</span> ${meus > 1 ? "dos seus times" : "do seu time"}`);
+  if (bil) partes.push(`<span class="rc">${bil} bilhete${bil > 1 ? "s" : ""}</span> pronto${bil > 1 ? "s" : ""}`);
+  if (window.palStreak >= 2) partes.push(`<span class="rc">${window.palStreak} dias</span> seguidos por aqui`);
+  if (!partes.length) return "";
+  return `<div class="resumo fade"><div class="rx"><b>${ola}${nome ? ", " + esc(nome) : ""}!</b>Hoje tem ${partes.join(" · ")}.</div>
+    <button onclick="fecharResumo()" aria-label="Fechar">✕</button></div>`;
+}
 const isHome = () => !location.hash.slice(1) && homeTab === "jogos";
 async function homeView() {
-  const head = `<div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar app</button>` : ""}</div>
+  const head = `<div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${fogo()}${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar app</button>` : ""}</div>
     <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">Partidas</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">Palpites</button></div>`;
   if (homeTab === "palpites") {
     const r = readyView();
-    return `<div class="top">${head}</div>` + (r || `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`) + credit;
+    talvezGerarSozinho();
+    return `<div class="top">${head}</div>` + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + credit;
   }
   const top = `<div class="top">${head}
     <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -724,8 +1073,9 @@ async function homeView() {
     catch (e) { return top + `<div class="empty">Não consegui carregar os jogos. Confere a internet e tenta de novo.<br><button class="retry" onclick="render()">Tentar de novo</button></div>`; }
     if (off !== dayOff) return null;
   } else refreshDay(off);
+  if (!calibraRodou) setTimeout(resolverCalibra, 1500);
   const q = filter.trim().toLowerCase();
-  let html = top, any = false;
+  let html = top + (q || liveOnly ? "" : resumoView()), any = false;
   if (favs && favs.length && !q) {
     const mine = dayCache[key].d.flatMap(g => g.ms).filter(m => favGame(m) && (!liveOnly || m.status === "live"))
       .sort((a, b) => a.time.localeCompare(b.time));
@@ -808,7 +1158,7 @@ async function detailView(id) {
     body = `<div class="box fade"><h3>Sequências</h3>` +
       (A.seq.length ? A.seq.map(s => `<div class="row">${crest(s.team, s.logo, "crest mini")}<span class="lbl">${esc(s.lbl)}</span><span class="val">${s.val}</span></div>`).join("")
                     : `<div class="empty">Sem sequências marcantes nos últimos jogos.</div>`) +
-      `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res.length} jogos do ${esc(short(m.home))} e ${A.A.res.length} do ${esc(short(m.away))}.</p></div>
+      `<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Base: últimos ${A.H.res6.length} jogos do ${esc(short(m.home))} e ${A.A.res6.length} do ${esc(short(m.away))}.</p></div>
       ${(() => { const c = A.cards || {}, h = c.h, a = c.a, f = v => v == null ? "-" : v.toFixed(1).replace(".", ",");
         if (!h && !a) return A.cardsBusy ? `<div class="box fade"><h3>Árbitro e cartões</h3><div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Contando os cartões…</div></div>` : "";
         const row = (lbl, hv, av) => `<div class="cr"><b>${hv}</b><span>${lbl}</span><b>${av}</b></div>`;
@@ -822,24 +1172,32 @@ async function detailView(id) {
           ${exp != null ? `<div class="cexp">Média de amarelos dos dois times somados: <b>${f(exp)}</b> por jogo</div>` : ""}
           <div class="cref">Árbitro: <b>${m.referee ? esc(m.referee) : "ainda não divulgado pela fonte de dados"}</b></div>
           <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:8px">Base: últimos ${h ? h.n : 0} jogos do ${esc(short(m.home))} e ${a ? a.n : 0} do ${esc(short(m.away))}.</p></div>`; })()}
-      ${(() => { const w = winProb(A.H, A.A); return `<div class="box fade"><h3>Chance de vitória</h3>
+      ${caixaDesfalques(m, A)}
+      ${(() => { const w = winProb(A.H, A.A, m, A.table); return `<div class="box fade"><h3>Chance de vitória</h3>
         <div class="wp"><div>${crest(m.home, m.home_logo)}<b style="color:var(--green)">${w.h}%</b><span>${esc(short(m.home))}</span></div>
           <div><b style="color:#aab4be">${w.d}%</b><span>Empate</span></div>
           <div>${crest(m.away, m.away_logo)}<b style="color:#4c8dff">${w.a}%</b><span>${esc(short(m.away))}</span></div></div>
         <div class="wbar"><i style="width:${w.h}%;background:var(--green)"></i><i style="width:${w.d}%;background:#6b7682"></i><i style="width:${w.a}%;background:#4c8dff"></i></div>
-        <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Estimativa pelos últimos jogos, com peso do mando de campo. Não é garantia de resultado.</p></div>`; })()}
+        <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Estimativa pela forma recente, pelo mando de campo e pela campanha na tabela. Não é garantia de resultado.</p></div>`; })()}
       <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">Ver palpites do Palpiteiro</button></div>`;
   } else if (tab === "ia") {
-    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>`;
-    if (!A.picks.length) body += `<div class="empty">Esse jogo não tem tendência forte o bastante. O Palpiteiro prefere não indicar nada.</div>`;
+    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>${avisoDesfalques(m, A)}`;
+    if (!A.picks.length) {
+      const sd = semDados(A.H, A.A);
+      body += sd
+        ? `<div class="quieto"><b>Sem dados suficientes para palpitar</b>Encontrei ${sd.nh} jogo${sd.nh === 1 ? "" : "s"} recente${sd.nh === 1 ? "" : "s"} do ${esc(short(m.home))} e ${sd.na} do ${esc(short(m.away))}. Com tão pouco histórico, qualquer porcentagem aqui seria chute com cara de certeza — então o Palpiteiro prefere ficar quieto nesse jogo.</div>`
+        : `<div class="quieto"><b>Nenhuma tendência forte</b>Os números dos dois times estão equilibrados demais. O Palpiteiro prefere não indicar nada do que indicar por indicar.</div>`;
+    }
     for (const p of A.picks) {
       const inSlip = slip.some(s => s.id === id && s.mk === p.mk);
       const r = risco(p.conf);
       body += `<div class="pick fade"><div class="pick-h"><div class="mk">${esc(p.mk)}</div>${rskTag(r)}</div><div class="why">${esc(p.why)}</div>
         <div class="conf"><div class="bar"><i style="width:${p.conf}%;background:${r.c}"></i></div><span class="pct" style="color:${r.c}">${p.conf}%</span></div>
-        <button class="add ${inSlip ? "in" : ""}" data-id="${esc(id)}" data-mk="${esc(p.mk)}" data-conf="${p.conf}" onclick="toggle(this.dataset.id,this.dataset.mk,+this.dataset.conf)">${inSlip ? "No bilhete" : "+ Adicionar ao bilhete"}</button></div>`;
+        <div class="pick-a"><button class="add ${inSlip ? "in" : ""}" data-id="${esc(id)}" data-mk="${esc(p.mk)}" data-conf="${p.conf}" onclick="toggle(this.dataset.id,this.dataset.mk,+this.dataset.conf)">${inSlip ? "No bilhete" : "+ Bilhete"}</button>
+        ${botoesCasas(m)}</div></div>`;
     }
-    body += LEGENDA + `<p style="color:var(--mut);font-size:12px;margin-top:10px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.</p></div>`;
+    body += LEGENDA + `<p style="color:var(--mut);font-size:12px;margin-top:10px;text-align:center">A confiança vem só dos últimos resultados. Não considera desfalques. Não é garantia de resultado.<br>
+      <b style="color:#7b8794">Os botões de odd abrem a casa de apostas.</b> A odd de verdade é a de lá e muda até o jogo começar, por isso o Palpiteiro não mostra número próprio.</p></div>`;
   } else if (tab === "tab") {
     const T = A.table, mine = r => r.team_slug === A.H.slug || r.team_slug === A.A.slug || r.team === m.home || r.team === m.away;
     body = `<div class="box fade tbl-box"><h3>${esc(m.lname || "Tabela")}</h3>`;
@@ -931,6 +1289,81 @@ async function timesView() {
   return html + `<div style="padding:4px 16px 0"><button class="add" onclick="openFavs(false)">+ Adicionar ou remover times</button></div>` + credit;
 }
 
+/* ---------- bolão: chuta o placar, ganha ponto ---------- */
+let bolaoTab = "hoje", bolaoMeus = null, bolaoRank = null, bolaoDia = "";
+const pontosDe = (g, m) => {
+  const hs = +m.home_score, as = +m.away_score;
+  if (!Number.isFinite(hs) || !Number.isFinite(as)) return 0;
+  if (g.h === hs && g.a === as) return 5;
+  return Math.sign(g.h - g.a) === Math.sign(hs - as) ? 2 : 0;
+};
+async function salvarPalpite(id, el) {
+  const m = games[id]; if (!m || !window.palBolao) return;
+  const ins = el.closest(".bl").querySelectorAll(".bl-i");
+  const h = parseInt(ins[0].value, 10), a = parseInt(ins[1].value, 10);
+  if (!Number.isFinite(h) || !Number.isFinite(a) || h < 0 || a < 0 || h > 20 || a > 20) return;
+  if (new Date(m.time).getTime() <= Date.now()) return toast("Esse jogo já começou");
+  try {
+    await window.palBolao.salvar(id, m.time, h, a);
+    bolaoMeus = bolaoMeus || {}; bolaoMeus[id] = {h, a, pts: 0, pontuado: false};
+    ins.forEach(i => i.classList.add("ok"));
+    toast("Palpite salvo");
+  } catch (e) { console.error(e); toast("Não deu para salvar"); }
+}
+async function bolaoView() {
+  const head = `<div class="top"><div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Bo<span>lão</span></h1></button>${fogo()}</div>
+    <div class="seg"><button class="${bolaoTab === "hoje" ? "on" : ""}" onclick="bolaoTab='hoje';render()">Palpitar</button><button class="${bolaoTab === "rank" ? "on" : ""}" onclick="bolaoTab='rank';render()">Ranking</button></div></div>`;
+  if (!window.palBolao) return head + `<div class="empty">O bolão precisa da sua conta. Entre de novo para jogar.</div>` + credit;
+
+  if (bolaoTab === "rank") {
+    if (!bolaoRank) {
+      $("#app").innerHTML = head + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Montando o ranking…</div>`;
+      try { bolaoRank = await window.palBolao.ranking(); } catch (e) { return head + `<div class="empty">Não deu para carregar o ranking.<br><button class="retry" onclick="bolaoRank=null;render()">Tentar de novo</button></div>`; }
+      if (location.hash.slice(1) !== "bolao" || bolaoTab !== "rank") return null;
+    }
+    if (!bolaoRank.length) return head + `<div class="empty">Ninguém palpitou ainda esse mês.<br>Seja o primeiro na aba <b style="color:var(--green)">Palpitar</b>.</div>` + credit;
+    return head + bolaoRank.map(r => `<div class="rk ${r.eu ? "eu" : ""}"><div class="p ${r.pos <= 3 ? "m" + r.pos : ""}">${r.pos}º</div>
+      <div class="nm">${esc(r.nome)}${r.eu ? " (você)" : ""}<small>${r.jogos} palpite${r.jogos > 1 ? "s" : ""} · ${r.exatos} placar${r.exatos === 1 ? "" : "es"} exato${r.exatos === 1 ? "" : "s"}</small></div>
+      <div class="pt">${r.pts}<small>pontos</small></div></div>`).join("")
+      + `<p class="note">Placar exato vale 5 pontos. Acertar só quem ganha (ou o empate) vale 2.<br>O ranking zera todo mês.</p>`;
+  }
+
+  const dia = dayOf(0);
+  if (!dayCache[dia] || bolaoMeus === null || bolaoDia !== dia) {
+    $("#app").innerHTML = head + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Carregando os jogos…</div>`;
+    try {
+      if (!dayCache[dia]) dayCache[dia] = {t: Date.now(), d: await loadDay(0)};
+      if (bolaoMeus === null || bolaoDia !== dia) { bolaoMeus = await window.palBolao.meus(dia); bolaoDia = dia; }
+    } catch (e) { return head + `<div class="empty">Não deu para carregar agora.<br><button class="retry" onclick="bolaoMeus=null;render()">Tentar de novo</button></div>`; }
+    if (location.hash.slice(1) !== "bolao" || bolaoTab !== "hoje") return null;
+  }
+  const todos = dayCache[dia].d.flatMap(g => g.ms).sort((a, b) => a.time.localeCompare(b.time));
+  if (!todos.length) return head + `<div class="empty">Não tem jogo dos campeonatos principais hoje.<br>Volta amanhã para palpitar.</div>` + credit;
+
+  let html = head, ganhos = 0;
+  for (const m of todos) {
+    const id = mid(m), g = bolaoMeus[id], fim = m.status === "finished", live = m.status === "live";
+    const comecou = fim || live || new Date(m.time).getTime() <= Date.now();
+    // jogo acabou e o palpite ainda não foi contado: conta agora
+    if (g && fim && !g.pontuado) {
+      const pts = pontosDe(g, m);
+      g.pts = pts; g.pontuado = true;
+      window.palBolao.pontuar(id, pts); bolaoRank = null;
+    }
+    if (g && fim) ganhos += g.pts || 0;
+    const campo = (v, lado) => comecou
+      ? `<div class="bl-sc">${g ? (lado === "h" ? g.h : g.a) : "–"}</div>`
+      : `<input class="bl-i ${g ? "ok" : ""}" type="number" inputmode="numeric" min="0" max="20" value="${g ? (lado === "h" ? g.h : g.a) : ""}" data-id="${esc(id)}" aria-label="Gols">`;
+    const situacao = fim ? `Fim · ${m.home_score ?? "-"} x ${m.away_score ?? "-"}` : live ? `<b style="color:var(--red)">AO VIVO</b>` : hhmm(m.time);
+    html += `<div class="bl fade"><div class="bl-h"><b>${situacao}</b><span>${esc(m.lname || m.competition || "")}</span></div>
+      <div class="bl-r"><div class="bl-tm">${crest(m.home, m.home_logo)}<span>${esc(short(m.home))}</span>${campo(0, "h")}</div>
+        <div class="bl-tm">${crest(m.away, m.away_logo)}<span>${esc(short(m.away))}</span>${campo(0, "a")}</div></div>
+      ${g && fim ? `<div class="bl-pt" style="color:${g.pts ? "var(--green)" : "var(--mut)"}">${g.pts ? `+${g.pts} ponto${g.pts > 1 ? "s" : ""}` : "Não pontuou"}</div>`
+        : comecou && !g ? `<div class="bl-pt" style="color:var(--mut)">Você não palpitou nesse</div>` : ""}</div>`;
+  }
+  return html + `<p class="note">${ganhos ? `Você fez <b style="color:var(--green)">${ganhos} ponto${ganhos > 1 ? "s" : ""}</b> hoje.<br>` : ""}Palpite antes do jogo começar. Placar exato vale 5 pontos, acertar quem ganha vale 2.<br>Isso aqui é brincadeira, não é aposta.</p>`;
+}
+
 function slipView() {
   let html = `<div class="top"><div class="brand"><button class="home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"></button><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
@@ -963,13 +1396,14 @@ async function render(keepFocus, quiet) {
   const my = ++renderId;
   document.body.classList.toggle("quiet", !!quiet);
   const h = location.hash.slice(1);
-  $("#nav-jogos").classList.toggle("on", !h.startsWith("bilhete"));
-  $("#nav-bilhete").classList.toggle("on", h.startsWith("bilhete"));
+  const aba = h === "bilhete" ? "bilhete" : h === "bolao" ? "bolao" : "jogos";
+  ["jogos", "bolao", "bilhete"].forEach(k => $("#nav-" + k).classList.toggle("on", k === aba));
   let html;
   try {
     if (h.startsWith("jogo-")) html = await detailView(decodeURIComponent(h.slice(5)));
     else if (h === "bilhete") html = slipView();
     else if (h === "times") html = await timesView();
+    else if (h === "bolao") html = await bolaoView();
     else html = await homeView();
   } catch (e) {
     console.error("Palpiteiro render", e);
@@ -978,9 +1412,11 @@ async function render(keepFocus, quiet) {
   if (html == null || my !== renderId) return;
   $("#app").innerHTML = html;
   if (keepFocus) { const q = $("#q"); if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
+  $("#app").querySelectorAll(".bl-i").forEach(i => i.onchange = () => salvarPalpite(i.dataset.id, i));
 }
 window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
-window.palRender = () => { if (!location.hash.slice(1) && homeTab === "palpites") render(false, true); };
+window.palRender = () => { const h = location.hash.slice(1);
+  if ((!h && homeTab === "palpites") || h.startsWith("jogo-")) render(false, true); };
 document.addEventListener("visibilitychange", () => { if (!document.hidden && location.hash.slice(1) === "times" && !document.body.classList.contains("locked")) render(false, true); });
 /* ---------- sem zoom no celular ---------- */
 ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive: false}));
@@ -1072,6 +1508,6 @@ function gateFail() {
 }
 window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=4" onerror="gateFail()"></script>
+<script type="module" src="gate.js?v=5" onerror="gateFail()"></script>
 </body>
 </html>
