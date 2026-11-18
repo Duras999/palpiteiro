@@ -14,6 +14,22 @@
 <link rel="shortcut icon" href="icon-192.png?v=3">
 <link rel="manifest" href="manifest.webmanifest?v=5">
 <meta name="description" content="Jogos do dia, estatísticas, sequências e bilhetes prontos de futebol. +18">
+<!-- Preview de quando alguém manda o link no WhatsApp, Telegram, Instagram ou Facebook -->
+<link rel="canonical" href="https://opalpiteiro.online/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Palpiteiro">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://opalpiteiro.online/">
+<meta property="og:title" content="Palpiteiro — os jogos de hoje e os bilhetes prontos">
+<meta property="og:description" content="Estatísticas, sequências e palpites de futebol com a chance de cada um. Bilhetes prontos todo dia. Grátis. +18">
+<meta property="og:image" content="https://opalpiteiro.online/preview.png?v=1">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Palpiteiro">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Palpiteiro — os jogos de hoje e os bilhetes prontos">
+<meta name="twitter:description" content="Estatísticas, sequências e palpites de futebol com a chance de cada um. Bilhetes prontos todo dia. Grátis. +18">
+<meta name="twitter:image" content="https://opalpiteiro.online/preview.png?v=1">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://sportscore.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -329,6 +345,9 @@
   .bar{flex:1;height:8px;background:#2a323c;border-radius:99px;overflow:hidden}
   .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green2),var(--green))}
   .pct{font-weight:800;font-size:14px;color:var(--green);width:42px;text-align:right}
+  .aviso-conf{color:var(--mut);font-size:12px;line-height:1.5;margin:8px 0 2px}
+  .aviso-conf b{color:#aab4bf}
+  .bv-18{color:var(--mut);font-size:12px;line-height:1.45;text-align:center;margin:2px 0 10px}
   .add{margin-top:12px;width:100%;padding:11px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
   .pick-a{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .pick-a .add{margin-top:0;flex:1 1 140px;min-width:0}
@@ -520,7 +539,7 @@ function readyView() {
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
       `<a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`).join("") +
-    `<p class="ready-note">${list.some(b => b.codigo) ? "O botão abre a casa de apostas com o bilhete já montado. As odds podem mudar até o jogo." : "Monte as seleções na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
+    `<p class="ready-note">Bilhete é sugestão, não é garantia: pode vir red.<br>${list.some(b => b.codigo) ? "O botão abre a casa de apostas com o bilhete já montado. As odds podem mudar até o jogo." : "Monte as seleções na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
 }
 
 /* ---------- medir se a confiança é verdade ----------
@@ -639,6 +658,7 @@ window.palBemVindo = () => {
       <li><em>🏆</em><span><b>Bolão</b> — chute o placar dos jogos e dispute o ranking do mês. É de graça.</span></li>
       <li><em>🔖</em><span><b>Meus times</b> — escolha seus times e os jogos deles aparecem primeiro.</span></li>
     </ul>
+    <p class="bv-18">Só para maiores de 18 anos. Palpite é opinião baseada em estatística, não é garantia de resultado — aposte só o que você pode perder.</p>
     <button class="gen" id="bv-ok">Começar</button></div>`;
   el.querySelector("#bv-ok").onclick = () => { el.hidden = true; el.innerHTML = ""; };
   el.onclick = e => { if (e.target === el) { el.hidden = true; el.innerHTML = ""; } };
@@ -1247,7 +1267,7 @@ function telaErro(titulo, texto) {
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
 const acct = () => window.palUser ? `<p class="acct"><button onclick="go('perfil')">${esc(window.palUser.email || "")} · meu perfil</button></p>` : "";
-const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="termos/" style="color:#5f6b77">Termos de uso e privacidade</a><br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
+const credit = `<p class="note"><a href="termos/#responsabilidade" style="color:#8a96a3;text-decoration:none">+18 · Aposte com responsabilidade.</a><br><a href="termos/" style="color:#5f6b77">Termos de uso e privacidade</a><br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
 function matchRow(m) {
@@ -1427,7 +1447,8 @@ async function detailView(id) {
         <p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Estimativa pela forma recente, pelo mando de campo e pela campanha na tabela. Não é garantia de resultado.</p></div>`; })()}
       <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">Ver palpites do Palpiteiro</button></div>`;
   } else if (tab === "ia") {
-    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>${avisoDesfalques(m, A)}`;
+    body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>
+      <p class="aviso-conf">A porcentagem é a <b>confiança do nosso cálculo</b> nos últimos resultados — não é a chance real de acontecer, nem promessa de green.</p>${avisoDesfalques(m, A)}`;
     if (!A.picks.length) {
       const sd = semDados(A.H, A.A);
       body += sd
@@ -1817,6 +1838,6 @@ function gateFail() {
 }
 window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=7" onerror="gateFail()"></script>
+<script type="module" src="gate.js?v=8" onerror="gateFail()"></script>
 </body>
 </html>

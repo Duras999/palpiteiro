@@ -48,7 +48,10 @@ async function start() {
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   const digits = s => String(s || "").replace(/\D/g, "");
   const logo = `<div class="g-logo"><img src="icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span></h1></div>`;
-  const show = html => { gate.innerHTML = `<div class="g-card">${logo}${html}</div>`; gate.scrollTop = 0; };
+  const AV18 = `<p style="text-align:center;color:#6b7682;font-size:11.5px;line-height:1.5;margin-top:4px">
+    +18 · Aposte com responsabilidade. Palpite é opinião, não é garantia de resultado.<br>
+    <a href="termos/#responsabilidade" style="color:#6b7682">Termos e jogo responsável</a></p>`;
+  const show = html => { gate.innerHTML = `<div class="g-card">${logo}${html}${AV18}</div>`; gate.scrollTop = 0; };
   const err = msg => { const e = gate.querySelector(".g-err"); if (e) { e.className = "g-err"; e.textContent = msg; e.hidden = false; } };
   const ok = msg => { const e = gate.querySelector(".g-err"); if (e) { e.className = "g-ok"; e.textContent = msg; e.hidden = false; } };
   const busy = on => gate.querySelectorAll("button,input").forEach(b => b.disabled = on);
@@ -206,11 +209,29 @@ async function start() {
   const today = () => new Date().toLocaleDateString("en-CA", {timeZone: TZBR});
   const ontem = () => new Date(Date.now() - 86400000).toLocaleDateString("en-CA", {timeZone: TZBR});
 
+  /* Conta quantos documentos este celular leu hoje. O painel soma de todo mundo
+     para saber se a cota grátis do Firebase aguenta o movimento do dia. */
+  const LKEY = "pal-leituras";
+  let lidos = 0, lidosDia = "";
+  const contar = n => {
+    const d = today();
+    if (lidosDia !== d) {
+      lidosDia = d; lidos = 0;
+      try { const v = JSON.parse(localStorage.getItem(LKEY) || "null"); if (v && v.dia === d) lidos = +v.n || 0; } catch (e) {}
+    }
+    lidos += Math.max(0, +n || 0);
+    try { localStorage.setItem(LKEY, JSON.stringify({dia: d, n: lidos})); } catch (e) {}
+  };
+  const leituras = () => { contar(0); return {dia: lidosDia, n: lidos}; };
+  // o Firestore só cobra o que mudou desde a última vez, então é isso que a gente conta
+  const mudados = s => { try { return s.docChanges ? s.docChanges().length : s.docs.length; } catch (e) { return s.docs.length; } };
+
   // Bilhetes prontos do dia, cadastrados no painel do administrador.
   const watchTickets = () => {
     if (unsubTickets) unsubTickets();
     const day = today();
     unsubTickets = F.onSnapshot(F.query(F.collection(db, "tickets"), F.where("date", "==", day)), s => {
+      contar(mudados(s));
       window.palTickets = s.docs.map(d => ({id: d.id, ...d.data()}))
         .sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.tipo).localeCompare(String(b.tipo)));
       window.palRender && window.palRender();
@@ -222,6 +243,7 @@ async function start() {
   const watchOut = () => {
     if (unsubOut) unsubOut();
     unsubOut = F.onSnapshot(F.collection(db, "desfalques"), s => {
+      contar(mudados(s));
       window.palOut = s.docs.map(d => ({id: d.id, ...d.data()}));
       window.palRender && window.palRender();
     }, e => console.warn("Palpiteiro: desfalques", e && e.code));
@@ -231,6 +253,7 @@ async function start() {
   const watchCasas = () => {
     if (unsubCasas) unsubCasas();
     unsubCasas = F.onSnapshot(F.collection(db, "casas"), s => {
+      contar(mudados(s));
       window.palCasas = s.docs.map(d => ({id: d.id, ...d.data()}))
         .filter(c => c.ativa !== false && c.link)
         .sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
@@ -258,6 +281,8 @@ async function start() {
   const openApp = (u, d) => {
     document.body.classList.remove("locked");
     gate.hidden = true;
+    // tour rápido, só para quem está entrando pela primeira vez
+    if ((+d.opens || 0) <= 1) setTimeout(() => { try { window.palBemVindo && window.palBemVindo(); } catch (e) {} }, 700);
     window.palUser = {
       email: u.email || d.email || "", name: d.name || u.displayName || "",
       foto: d.photo || u.photoURL || "", whatsapp: d.whatsapp || "",
@@ -313,7 +338,7 @@ async function start() {
     };
     const bump = (field) => {
       const inc = F.increment(1), now = F.serverTimestamp();
-      F.updateDoc(ref, {[field]: inc, lastSeen: now}).catch(() => {});
+      F.updateDoc(ref, {[field]: inc, lastSeen: now, leituras: leituras()}).catch(() => {});
       F.setDoc(F.doc(db, "users", u.uid, "days", today()), {[field]: inc, date: today(), last: now}, {merge: true}).catch(() => {});
     };
     window.track = kind => { if (["games", "bets", "tickets"].includes(kind)) bump(kind); };
@@ -328,12 +353,12 @@ async function start() {
     };
     let opened = false; try { opened = !!sessionStorage.getItem("pl-open"); } catch (e) {}
     if (!opened) { try { sessionStorage.setItem("pl-open", "1"); } catch (e) {} bump("opens"); }
-    else F.updateDoc(ref, {lastSeen: F.serverTimestamp()}).catch(() => {});
+    else F.updateDoc(ref, {lastSeen: F.serverTimestamp(), leituras: leituras()}).catch(() => {});
     // marca presença de tempos em tempos (o painel usa para o "online agora") e troca os bilhetes na virada do dia
     if (beat) clearInterval(beat);
     beat = setInterval(() => {
       if (document.hidden) return;
-      F.updateDoc(ref, {lastSeen: F.serverTimestamp()}).catch(() => {});
+      F.updateDoc(ref, {lastSeen: F.serverTimestamp(), leituras: leituras()}).catch(() => {});
       if (watchTickets.day !== today()) watchTickets();
     }, 5 * 60000);
     watchTickets();
@@ -341,9 +366,25 @@ async function start() {
     watchCasas();
     // recado que o admin escreve no painel
     if (unsubBan) unsubBan();
+    let emManut = false;
     unsubBan = F.onSnapshot(F.doc(db, "config", "banner"), s => {
+      contar(1);
       const d = s.data() || {};
       window.palBanner = d.ativo && d.texto ? d : null;
+      // Modo manutenção: tira o app do ar para todo mundo menos o administrador.
+      const manut = !!d.manutencao && !souAdmin(u);
+      if (manut !== emManut) {
+        emManut = manut;
+        if (manut) {
+          document.body.classList.add("locked"); gate.hidden = false;
+          show(`<h2>Já voltamos</h2><p class="g-sub">${esc(d.manutTexto || "O Palpiteiro está em manutenção rápida. Daqui a pouco tá no ar de novo.")}</p>
+            <button class="g-main" id="g-manut">Tentar de novo</button>`);
+          const bt = gate.querySelector("#g-manut"); if (bt) bt.onclick = () => location.reload();
+          return;
+        }
+        gate.hidden = true; document.body.classList.remove("locked");
+      }
+      if (emManut) return;
       window.palRender && window.palRender();
     }, () => {});
     // Medição de acertos: grava os palpites antes do apito e o resultado depois.
@@ -415,6 +456,7 @@ async function start() {
     } catch (e) { console.error("Palpiteiro cadastro", e); }
     let opened = false, lastKey = "", retried = false, promoted = false;
     unsub = F.onSnapshot(ref, s => {
+      contar(1);
       // cadastro não chegou a ser gravado (queda de internet na hora): tenta de novo
       if (!s.exists() && !retried) { retried = true; makeDoc(u).catch(e => console.error("Palpiteiro cadastro", e)); }
       const d = s.data() || {};

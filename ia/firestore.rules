@@ -29,7 +29,7 @@ service cloud.firestore {
     function onlyUsageFields() {
       return request.resource.data.diff(resource.data).affectedKeys()
         .hasOnly(['opens', 'games', 'bets', 'tickets', 'lastSeen', 'whatsapp',
-                  'favs', 'slip', 'streak', 'lastDay']);
+                  'favs', 'slip', 'streak', 'lastDay', 'leituras']);
     }
 
     // Lista de administradores. Só o dono mexe, para ninguém se promover
