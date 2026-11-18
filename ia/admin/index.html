@@ -60,6 +60,33 @@
   .rsk{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;font-size:12.5px;font-weight:800;white-space:nowrap}
   .rsk i{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
   .sug{color:var(--mut);font-size:12px;line-height:1.4}
+  .cal{background:var(--card);border-radius:16px;padding:14px;margin-bottom:10px}
+  .cal h4{font-size:15px;font-weight:800;margin-bottom:10px}
+  .cal table{font-size:13.5px}
+  .cal td,.cal th{padding:9px 5px}
+  .dif.bom{color:var(--green);font-weight:800}
+  .dif.ruim{color:var(--red);font-weight:800}
+  .dif.ok{color:var(--yel);font-weight:800}
+  .cbar{display:inline-block;height:7px;border-radius:99px;min-width:3px;vertical-align:middle}
+  .casa{background:var(--card);border-radius:16px;padding:13px 14px}
+  .casa-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .casa-h b{font-size:16px}
+  .casa-l{color:var(--mut);font-size:12.5px;word-break:break-all}
+  .off{opacity:.5}
+  .adm{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 13px;margin-bottom:8px}
+  .adm span{flex:1;min-width:0;word-break:break-all;font-size:14px}
+  .cl{color:var(--mut);font-size:12.5px;margin-top:8px}
+  .cl b{color:var(--green);font-weight:800;font-size:14px}
+  .conv{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+  .conv div{background:var(--card);border-radius:14px;padding:11px 12px}
+  .conv b{display:block;font-size:20px;font-weight:800}
+  .conv span{font-size:12px;color:var(--mut)}
+  .dqc{background:var(--card);border-radius:16px;padding:13px 14px}
+  .dqc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .dqc-h b{font-size:16px}
+  .dqc-l{color:#cfd6dd;font-size:13.5px;line-height:1.55}
+  .dqc-l em{color:var(--mut);font-style:normal}
+  .form textarea{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:11px 12px;color:var(--txt);outline:0;width:100%;font:inherit;font-size:15px;min-height:130px;resize:vertical}
   .tk-s{padding:7px 0;border-top:1px solid var(--line);font-size:14px}
   .tk-s small{display:block;color:var(--mut);font-size:12px}
   .tk-c{color:var(--mut);font-size:12px;margin-top:8px;word-break:break-all}
@@ -156,7 +183,10 @@ function riscoNome(nome, odd) {
 }
 const rskTag = r => `<span class="rsk" style="color:${r.c};background:${r.c}1f"><i></i>${r.lbl}</span>`;
 
-let users = [], tickets = [], tab = "pend", q = "", filt = "all", tkDay = dayStr(), unsub = null, unsubT = null, ticketsErr = false;
+let users = [], tickets = [], desf = [], casas = [], admsExtra = [], tab = "pend", q = "", filt = "all", tkDay = dayStr();
+let unsub = null, unsubT = null, unsubD = null, unsubC = null, unsubA = null, ticketsErr = false;
+let calMes = dayStr().slice(0, 7), calDados = null, calCarregando = false;
+let souDono = false;
 const modal = document.getElementById("modal"), sheet = document.getElementById("sheet");
 const closeModal = () => { modal.hidden = true; sheet.innerHTML = ""; if (auth.currentUser) view(); };
 modal.onclick = e => { if (e.target === modal) closeModal(); };
@@ -198,6 +228,10 @@ function view() {
   const me = auth.currentUser;
   let body = "";
   if (tab === "tk") body = ticketsView();
+  else if (tab === "dq") body = desfalquesView();
+  else if (tab === "cal") body = acertosView();
+  else if (tab === "casas") body = casasView();
+  else if (tab === "adm") body = adminsView();
   else {
     let list = tab === "pend" ? pend : users;
     if (tab === "users") {
@@ -214,7 +248,7 @@ function view() {
 
   root.innerHTML = `<div class="wrap">
     <header><div class="brand"><img src="../icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span><small>Painel do administrador</small></h1></div>
-      <div class="who"><span>${esc(me.email)}</span><a class="btn s" href="../" style="text-decoration:none">Abrir o app</a><button class="btn s" id="out">Sair</button></div></header>
+      <div class="who"><span>${esc(me.email)}</span><a class="btn s" href="../" style="text-decoration:none">Abrir o app</a><button class="btn s" id="bkp">Backup</button><button class="btn s" id="out">Sair</button></div></header>
     <div class="stats">
       <div class="st"><b>${users.length}</b><span>Cadastrados</span></div>
       <div class="st pend"><b>${pend.length}</b><span>Aguardando aprovação</span></div>
@@ -226,12 +260,17 @@ function view() {
     </div>
     <div class="tabs"><button class="${tab === "pend" ? "on" : ""}" data-tab="pend">Pedidos${pend.length ? `<span class="n">${pend.length}</span>` : ""}</button>
       <button class="${tab === "users" ? "on" : ""}" data-tab="users">Usuários</button>
-      <button class="${tab === "tk" ? "on" : ""}" data-tab="tk">Bilhetes</button></div>
+      <button class="${tab === "tk" ? "on" : ""}" data-tab="tk">Bilhetes</button>
+      <button class="${tab === "dq" ? "on" : ""}" data-tab="dq">Desfalques</button>
+      <button class="${tab === "cal" ? "on" : ""}" data-tab="cal">Acertos</button>
+      <button class="${tab === "casas" ? "on" : ""}" data-tab="casas">Casas</button>
+      ${souDono ? `<button class="${tab === "adm" ? "on" : ""}" data-tab="adm">Admins</button>` : ""}</div>
     ${body}
   </div>`;
   const f = document.getElementById("f"); if (f) { f.value = filt; f.onchange = () => { filt = f.value; view(); }; }
   const qi = document.getElementById("q"); if (qi) qi.oninput = () => { q = qi.value; const p = qi.selectionStart; view(); const n = document.getElementById("q"); n.focus(); n.setSelectionRange(p, p); };
   const csv = document.getElementById("csv"); if (csv) csv.onclick = exportCsv;
+  document.getElementById("bkp").onclick = baixarBackup;
   const all = document.getElementById("all"); if (all) all.onclick = approveAll;
   document.getElementById("out").onclick = () => A.signOut(auth);
   root.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { tab = b.dataset.tab; view(); });
@@ -239,6 +278,10 @@ function view() {
   root.querySelectorAll("[data-stop]").forEach(b => b.onclick = e => e.stopPropagation());
   root.querySelectorAll("[data-open]").forEach(b => b.onclick = () => detail(b.dataset.open));
   if (tab === "tk") wireTickets();
+  if (tab === "dq") wireDesfalques();
+  if (tab === "cal") wireAcertos();
+  if (tab === "casas") wireCasas();
+  if (tab === "adm") wireAdmins();
 }
 
 function row(u) {
@@ -318,6 +361,261 @@ async function detail(id) {
   } catch (e) { const el = document.getElementById("days"); if (el) el.textContent = "Não deu para carregar o uso por dia."; }
 }
 
+/* ---------- Backup de tudo, para não depender só do Firebase ---------- */
+function baixarArquivo(nome, texto, tipo) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([texto], {type: tipo}));
+  a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+async function baixarBackup() {
+  const b = document.getElementById("bkp");
+  b.disabled = true; b.textContent = "Baixando…";
+  try {
+    const nomes = ["users", "tickets", "desfalques", "casas", "bolao", "calibra"];
+    const tudo = {gerado: new Date().toISOString(), por: auth.currentUser.email};
+    for (const n of nomes) {
+      const s = await F.getDocs(F.collection(db, n)).catch(() => null);
+      tudo[n] = s ? s.docs.map(d => ({id: d.id, ...d.data()})) : [];
+    }
+    const diasPorUser = {};
+    for (const u of tudo.users) {
+      const s = await F.getDocs(F.collection(db, "users", u.id, "days")).catch(() => null);
+      if (s && s.docs.length) diasPorUser[u.id] = s.docs.map(d => ({id: d.id, ...d.data()}));
+    }
+    tudo.diasDeUso = diasPorUser;
+    const cfg = await F.getDoc(F.doc(db, "config", "admins")).catch(() => null);
+    tudo.admins = cfg && cfg.exists() ? cfg.data() : null;
+    baixarArquivo(`palpiteiro-backup-${dayStr()}.json`, JSON.stringify(tudo, null, 2), "application/json");
+  } catch (e) { alert("Não deu para montar o backup agora. Tente de novo."); }
+  b.disabled = false; b.textContent = "Backup";
+}
+
+/* ---------- Acertos: o app prometeu X%, aconteceu quanto? ---------- */
+const FAIXAS = [{de: 80, ate: 100, c: "#19e07a"}, {de: 70, ate: 79, c: "#a8e05f"}, {de: 60, ate: 69, c: "#ffd34d"}, {de: 0, ate: 59, c: "#ff9a3d"}];
+const pc1 = x => (x * 100).toFixed(0) + "%";
+async function carregarAcertos() {
+  calCarregando = true; view();
+  try {
+    const s = await F.getDocs(F.query(F.collection(db, "calibra"), F.where("mes", "==", calMes)));
+    calDados = s.docs.map(d => d.data()).filter(d => d.avaliado && Array.isArray(d.picks) && Array.isArray(d.acertos));
+  } catch (e) { calDados = null; }
+  calCarregando = false; view();
+}
+function acertosView() {
+  const meses = [];
+  for (let i = 0; i < 6; i++) { const d = new Date(); d.setMonth(d.getMonth() - i); meses.push(d.toISOString().slice(0, 7)); }
+  const topo = `<div class="bar"><select id="cal-mes">${meses.map(m => `<option value="${m}" ${m === calMes ? "selected" : ""}>${m.split("-").reverse().join("/")}</option>`).join("")}</select>
+    <button class="btn s" id="cal-rec">Atualizar</button></div>`;
+  if (calCarregando) return topo + `<div class="empty">Carregando…</div>`;
+  if (calDados === null) return topo + `<div class="empty">Não deu para ler a medição. Confira se as regras novas do Firestore foram publicadas.</div>`;
+  const linhas = [];
+  for (const d of calDados) d.picks.forEach((p, i) => { if (typeof d.acertos[i] === "boolean") linhas.push({conf: +p.conf || 0, mk: p.mk, ok: d.acertos[i], jogo: d.jogo}); });
+  if (!linhas.length) return topo + `<div class="empty">Ainda não tem palpite medido nesse mês.<br>A medição começa sozinha: o app guarda os palpites antes do jogo e confere o resultado depois.</div>`;
+  const acertos = linhas.filter(x => x.ok).length;
+  const dito = linhas.reduce((a, x) => a + x.conf, 0) / linhas.length / 100;
+  const real = acertos / linhas.length;
+  const porFaixa = FAIXAS.map(f => {
+    const L = linhas.filter(x => x.conf >= f.de && x.conf <= f.ate);
+    if (!L.length) return null;
+    const r = L.filter(x => x.ok).length / L.length, d = L.reduce((a, x) => a + x.conf, 0) / L.length / 100;
+    return {f, n: L.length, real: r, dito: d};
+  }).filter(Boolean);
+  const porMk = [...new Map(linhas.map(x => [x.mk, null])).keys()].map(mk => {
+    const L = linhas.filter(x => x.mk === mk);
+    return {mk, n: L.length, real: L.filter(x => x.ok).length / L.length};
+  }).sort((a, b) => b.n - a.n);
+  const dif = (real, dito) => { const d = real - dito;
+    return `<span class="dif ${d >= -0.05 ? "bom" : d >= -0.12 ? "ok" : "ruim"}">${d >= 0 ? "+" : ""}${(d * 100).toFixed(0)} pts</span>`; };
+  return topo + `<div class="conv">
+      <div><b>${linhas.length}</b><span>palpites medidos</span></div>
+      <div><b style="color:var(--green)">${acertos}</b><span>acertaram</span></div>
+      <div><b>${pc1(real)}</b><span>acerto de verdade</span></div>
+      <div><b style="color:var(--mut)">${pc1(dito)}</b><span>o app prometeu</span></div>
+    </div>
+    <div class="cal"><h4>Por faixa de confiança</h4>
+      <table><thead><tr><th class="tl">Faixa</th><th>Palpites</th><th>Prometido</th><th>Aconteceu</th><th>Diferença</th></tr></thead><tbody>
+      ${porFaixa.map(x => `<tr><td class="tl"><span class="cbar" style="width:26px;background:${x.f.c}"></span> ${x.f.de}–${x.f.ate}%</td>
+        <td>${x.n}</td><td style="color:var(--mut)">${pc1(x.dito)}</td><td><b>${pc1(x.real)}</b></td><td>${dif(x.real, x.dito)}</td></tr>`).join("")}
+      </tbody></table>
+      <p class="hint" style="margin-top:10px">Diferença perto de zero quer dizer que a confiança do app é honesta. Número negativo grande quer dizer que ele promete mais do que entrega naquela faixa — aí eu ajusto a conta.</p></div>
+    <div class="cal"><h4>Por tipo de palpite</h4>
+      <table><thead><tr><th class="tl">Mercado</th><th>Palpites</th><th>Acerto</th></tr></thead><tbody>
+      ${porMk.map(x => `<tr><td class="tl">${esc(x.mk)}</td><td>${x.n}</td><td><b style="color:${x.real >= .6 ? "var(--green)" : x.real >= .5 ? "var(--yel)" : "var(--red)"}">${pc1(x.real)}</b></td></tr>`).join("")}
+      </tbody></table>
+      <p class="hint" style="margin-top:10px">Serve para você publicar mais do que funciona e cortar o que não funciona. Com menos de 20 palpites num mercado, o número ainda é pouco confiável.</p></div>`;
+}
+function wireAcertos() {
+  const m = document.getElementById("cal-mes");
+  if (m) m.onchange = () => { calMes = m.value; calDados = null; carregarAcertos(); };
+  const r = document.getElementById("cal-rec"); if (r) r.onclick = () => { calDados = null; carregarAcertos(); };
+  if (calDados === null && !calCarregando) carregarAcertos();
+}
+
+/* ---------- Casas de apostas ---------- */
+function casasView() {
+  const list = [...casas].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+  return `<div class="bar"><button class="btn g" id="ca-new">+ Adicionar casa</button></div>
+    <p class="hint" style="margin-bottom:10px">As casas ativas viram botões em cada palpite do app. Sem nenhuma cadastrada, o app usa a Bingo em Casa. No link, escreva <b>{q}</b> onde entraria o nome dos times, se a casa tiver busca: o app troca sozinho.</p>
+    <div class="list">${list.length ? list.map(c => `<div class="casa ${c.ativa === false ? "off" : ""}">
+      <div class="casa-h"><b>${esc(c.nome || c.id)}</b><span class="pill ${c.ativa === false ? "blocked" : "approved"}">${c.ativa === false ? "Desligada" : "Ativa"}</span></div>
+      <div class="casa-l">${esc(c.link || "")}</div>
+      <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-cae="${esc(c.id)}">Editar</button>
+        <button class="btn s" data-cat="${esc(c.id)}">${c.ativa === false ? "Ligar" : "Desligar"}</button>
+        <button class="btn r" data-cax="${esc(c.id)}">Excluir</button></div></div>`).join("") : `<div class="empty">Nenhuma casa cadastrada. O app está usando a Bingo em Casa.</div>`}</div>`;
+}
+function wireCasas() {
+  const n = document.getElementById("ca-new"); if (n) n.onclick = () => casaForm(null);
+  root.querySelectorAll("[data-cae]").forEach(b => b.onclick = () => casaForm(casas.find(c => c.id === b.dataset.cae)));
+  root.querySelectorAll("[data-cat]").forEach(b => b.onclick = async () => {
+    const c = casas.find(x => x.id === b.dataset.cat); if (!c) return;
+    try { await F.updateDoc(F.doc(db, "casas", c.id), {ativa: c.ativa === false}); } catch (e) { alert("Não deu para mudar."); }
+  });
+  root.querySelectorAll("[data-cax]").forEach(b => b.onclick = async () => {
+    const c = casas.find(x => x.id === b.dataset.cax); if (!c) return;
+    if (!confirm(`Tirar a casa ${c.nome || c.id} do app?`)) return;
+    try { await F.deleteDoc(F.doc(db, "casas", c.id)); } catch (e) { alert("Não deu para excluir."); }
+  });
+}
+function casaForm(c) {
+  const novo = !c; c = c || {nome: "", curto: "", link: "", ordem: casas.length, ativa: true};
+  modal.hidden = false;
+  sheet.innerHTML = `<h3>${novo ? "Nova casa de apostas" : "Editar casa"}</h3>
+    <div class="form">
+      <label>Nome<input id="c-nome" value="${esc(c.nome || "")}" maxlength="30" placeholder="Ex.: Bingo em Casa"></label>
+      <label>Nome curto (aparece no botão)<input id="c-curto" value="${esc(c.curto || "")}" maxlength="12" placeholder="Ex.: Bingo"></label>
+      <label>Link<input id="c-link" value="${esc(c.link || "")}" maxlength="300" placeholder="https://..."></label>
+      <p class="hint">Use o seu link de afiliado. Se a casa tiver busca por time, coloque <b>{q}</b> no lugar do termo.</p>
+      <div class="g2"><label>Ordem<input id="c-ordem" type="number" min="0" max="20" value="${+c.ordem || 0}"></label>
+        <label>Situação<select id="c-ativa"><option value="1" ${c.ativa !== false ? "selected" : ""}>Ativa</option><option value="0" ${c.ativa === false ? "selected" : ""}>Desligada</option></select></label></div>
+      <div class="err" id="c-err" hidden></div>
+      <button class="btn g" id="c-save" style="padding:13px">Salvar</button>
+      <button class="btn s" id="c-cancel">Cancelar</button></div>`;
+  document.getElementById("c-cancel").onclick = closeModal;
+  const save = document.getElementById("c-save");
+  save.onclick = async () => {
+    const er = m => { const e = document.getElementById("c-err"); e.textContent = m; e.hidden = false; };
+    const nome = document.getElementById("c-nome").value.trim();
+    const link = document.getElementById("c-link").value.trim();
+    if (nome.length < 2) return er("Escreva o nome da casa.");
+    if (!/^https?:\/\//i.test(link)) return er("O link precisa começar com https://");
+    const dados = {nome, curto: document.getElementById("c-curto").value.trim(), link,
+      ordem: +document.getElementById("c-ordem").value || 0, ativa: document.getElementById("c-ativa").value === "1",
+      updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
+    save.disabled = true;
+    try {
+      if (novo) await F.addDoc(F.collection(db, "casas"), dados);
+      else await F.updateDoc(F.doc(db, "casas", c.id), dados);
+      closeModal();
+    } catch (e) { save.disabled = false; er("Não deu para salvar."); }
+  };
+}
+
+/* ---------- Administradores (só o dono mexe) ---------- */
+function adminsView() {
+  return `<p class="hint" style="margin-bottom:10px">Quem estiver nessa lista entra no painel e monta bilhetes pelo app. O seu e-mail é o dono e não sai daqui — é o que garante que ninguém te tire do próprio painel.</p>
+    <div class="adm"><span><b>${esc(ADMINS[0] || "")}</b></span><span class="pill approved" style="flex:none">Dono</span></div>
+    ${admsExtra.map(e => `<div class="adm"><span>${esc(e)}</span><button class="btn r" data-admx="${esc(e)}" style="flex:none">Tirar</button></div>`).join("")}
+    <div class="bar" style="margin-top:12px"><input id="adm-novo" type="email" placeholder="e-mail do novo administrador" autocapitalize="off">
+      <button class="btn g" id="adm-add">Adicionar</button></div>
+    <div class="err" id="adm-err" hidden></div>
+    <p class="hint" style="margin-top:10px">O e-mail precisa ser de uma conta Google confirmada, senão o banco não libera o painel para ela.</p>`;
+}
+async function salvarAdmins(lista) {
+  await F.setDoc(F.doc(db, "config", "admins"), {emails: lista, updatedAt: F.serverTimestamp(), by: auth.currentUser.email});
+}
+function wireAdmins() {
+  const er = m => { const e = document.getElementById("adm-err"); if (e) { e.textContent = m; e.hidden = false; } };
+  const add = document.getElementById("adm-add");
+  if (add) add.onclick = async () => {
+    const i = document.getElementById("adm-novo"), v = i.value.trim().toLowerCase();
+    if (!/^\S+@\S+\.\S+$/.test(v)) return er("Digite um e-mail válido.");
+    if (v === String(ADMINS[0] || "").toLowerCase()) return er("Esse já é o dono.");
+    if (admsExtra.includes(v)) return er("Esse e-mail já é administrador.");
+    add.disabled = true;
+    try { await salvarAdmins([...admsExtra, v]); i.value = ""; } catch (e) { er("Não deu para salvar."); }
+    add.disabled = false;
+  };
+  root.querySelectorAll("[data-admx]").forEach(b => b.onclick = async () => {
+    if (!confirm(`Tirar ${b.dataset.admx} da lista de administradores?`)) return;
+    try { await salvarAdmins(admsExtra.filter(e => e !== b.dataset.admx)); } catch (e) { alert("Não deu para salvar."); }
+  });
+}
+
+/* ---------- O que converte: cliques em Apostar por nível de risco ---------- */
+function conversaoView() {
+  const com = tickets.filter(t => (+t.clicks || 0) > 0 || t.date <= dayStr());
+  if (!com.length) return "";
+  const total = com.reduce((a, t) => a + (+t.clicks || 0), 0);
+  if (!total) return `<p class="hint" style="margin-bottom:10px">Ninguém clicou em Apostar nos bilhetes ainda. Assim que clicarem, aparece aqui qual nível de risco mais converte.</p>`;
+  const por = new Map();
+  for (const t of com) {
+    const r = riscoNome(t.tipo, t.odd); if (!r) continue;
+    const o = por.get(r.lbl) || {r, cliques: 0, n: 0};
+    o.cliques += (+t.clicks || 0); o.n++; por.set(r.lbl, o);
+  }
+  const ord = [...por.values()].sort((a, b) => (b.cliques / b.n) - (a.cliques / a.n));
+  const top = ord[0];
+  return `<div class="conv">${ord.map(x => `<div><b style="color:${x.r.c}">${x.cliques}</b><span>${x.r.lbl}<br>${x.n} bilhete${x.n > 1 ? "s" : ""} · ${(x.cliques / x.n).toFixed(1)} por bilhete</span></div>`).join("")}</div>
+    <p class="hint" style="margin-bottom:10px">${total} clique${total > 1 ? "s" : ""} em Apostar no total.${ord.length > 1 ? ` O nível que mais converte é <b style="color:${top.r.c}">${top.r.lbl}</b>, com ${(top.cliques / top.n).toFixed(1)} cliques por bilhete.` : ""}</p>`;
+}
+
+/* ---------- Desfalques por time ---------- */
+const linhasDesf = l => (l || []).map(x => x.nome + (x.motivo ? " - " + x.motivo : "")).join("\n");
+function desfalquesView() {
+  const list = [...desf].sort((a, b) => String(a.time).localeCompare(String(b.time), "pt-BR"));
+  return `<div class="bar"><button class="btn g" id="dq-new">+ Adicionar time</button></div>
+    <p class="hint" style="margin-bottom:10px">Os desfalques aparecem na tela do jogo, na aba Sequências, e avisam quem for ver os palpites. Eles não mudam a conta da confiança — servem para a pessoa decidir.</p>
+    <div class="list">${list.length ? list.map(d => `<div class="dqc">
+      <div class="dqc-h"><b>${esc(d.time || d.id)}</b><span class="muted">${(d.lista || []).length} desfalque${(d.lista || []).length === 1 ? "" : "s"}</span></div>
+      <div class="dqc-l">${(d.lista || []).map(x => `${esc(x.nome)}${x.motivo ? ` <em>· ${esc(x.motivo)}</em>` : ""}`).join("<br>") || "<em>sem ninguém na lista</em>"}</div>
+      <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-dqe="${esc(d.id)}">Editar</button><button class="btn r" data-dqx="${esc(d.id)}">Excluir</button></div>
+    </div>`).join("") : `<div class="empty">Nenhum time com desfalque cadastrado.</div>`}</div>`;
+}
+function wireDesfalques() {
+  const n = document.getElementById("dq-new"); if (n) n.onclick = () => desfalqueForm(null);
+  root.querySelectorAll("[data-dqe]").forEach(b => b.onclick = () => desfalqueForm(desf.find(d => d.id === b.dataset.dqe)));
+  root.querySelectorAll("[data-dqx]").forEach(b => b.onclick = async () => {
+    const d = desf.find(x => x.id === b.dataset.dqx); if (!d) return;
+    if (!confirm(`Tirar os desfalques do ${d.time || d.id}? Eles somem do app na hora.`)) return;
+    try { await F.deleteDoc(F.doc(db, "desfalques", d.id)); } catch (e) { alert("Não deu para excluir. Tente de novo."); }
+  });
+}
+const slugTime = n => String(n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+  .replace(/\s*-\s*[a-z]{2}$/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+function desfalqueForm(d) {
+  const novo = !d;
+  d = d || {time: "", lista: []};
+  modal.hidden = false;
+  sheet.innerHTML = `<h3>${novo ? "Desfalques de um time" : "Editar desfalques"}</h3>
+    <div class="form">
+      <label>Time<input id="d-time" value="${esc(d.time || "")}" maxlength="40" placeholder="Ex.: Flamengo" ${novo ? "" : "disabled"}></label>
+      <label>Quem está fora (um por linha)<textarea id="d-lista" placeholder="Pedro Silva - lesão&#10;João Souza - suspenso&#10;Carlos - dúvida">${esc(linhasDesf(d.lista))}</textarea></label>
+      <p class="hint">Escreva um nome por linha. Para dizer o motivo, use um traço: <b>Pedro Silva - lesão</b>.</p>
+      <div class="err" id="d-err" hidden></div>
+      <button class="btn g" id="d-save" style="padding:13px">Salvar</button>
+      <button class="btn s" id="d-cancel">Cancelar</button>
+    </div>`;
+  document.getElementById("d-cancel").onclick = closeModal;
+  const save = document.getElementById("d-save");
+  save.onclick = async () => {
+    const er = m => { const e = document.getElementById("d-err"); e.textContent = m; e.hidden = false; };
+    const time = (novo ? document.getElementById("d-time").value : d.time).trim();
+    if (time.length < 2) return er("Escreva o nome do time.");
+    const slug = slugTime(time);
+    if (!slug) return er("Nome de time inválido.");
+    const lista = document.getElementById("d-lista").value.split("\n").map(l => {
+      const [nome, ...resto] = l.split(/\s+-\s+/);
+      return {nome: String(nome || "").trim().slice(0, 40), motivo: resto.join(" - ").trim().slice(0, 30)};
+    }).filter(x => x.nome).slice(0, 15);
+    save.disabled = true;
+    try {
+      await F.setDoc(F.doc(db, "desfalques", slug), {time, slug, lista, updatedAt: F.serverTimestamp(), by: auth.currentUser.email});
+      closeModal();
+    } catch (e) { save.disabled = false; er("Não deu para salvar. Confira a internet e as regras do Firestore."); }
+  };
+}
+
 /* ---------- Bilhetes prontos do dia ---------- */
 const brDay = d => String(d).split("-").reverse().join("/");
 function ticketsView() {
@@ -327,10 +625,12 @@ function ticketsView() {
       <button class="btn s" id="tk-today">Hoje</button><button class="btn s" id="tk-tom">Amanhã</button>
       <button class="btn g" id="tk-new" style="margin-left:auto">+ Novo bilhete</button></div>
     <p class="hint" style="margin-bottom:10px">Os bilhetes de <b>${esc(brDay(tkDay))}</b> aparecem no app na aba Palpites só nesse dia. O botão Apostar abre a Bingo em Casa com o código de reserva.</p>
+    ${conversaoView()}
     <div class="list">${list.length ? list.map(t => `<div class="tk">
       <div class="tk-h">${(() => { const r = riscoNome(t.tipo, t.odd); return r ? rskTag(r) : `<b>${esc(t.tipo || "Bilhete")}</b>`; })()}<span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
       ${(t.sel || []).map(x => `<div class="tk-s"><small>${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</small>${esc(x.mercado)}</div>`).join("")}
       <div class="tk-c">Código de reserva: <b>${esc(t.codigo || "sem código (abre o link de cadastro)")}</b></div>
+      <div class="cl">Cliques em Apostar: <b>${+t.clicks || 0}</b></div>
       <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-tke="${esc(t.id)}">Editar</button><button class="btn s" data-tkc="${esc(t.id)}">Copiar para outro dia</button><button class="btn r" data-tkx="${esc(t.id)}">Excluir</button></div>
     </div>`).join("") : `<div class="empty">Nenhum bilhete cadastrado para esse dia.</div>`}</div>`;
 }
@@ -363,6 +663,7 @@ function ticketForm(t) {
         <label>Nível de risco<select id="t-tipo">${TIPOS.map(x => `<option ${nome === x ? "selected" : ""}>${x}</option>`).join("")}<option value="_" ${custom ? "selected" : ""}>Outro nome…</option></select></label></div>
       <label id="t-outro-l" ${custom ? "" : "hidden"}>Nome do bilhete<input id="t-outro" value="${esc(custom ? t.tipo : "")}" maxlength="24"></label>
       <div class="sug" id="t-sug" hidden></div>
+      <label>Casa do código<select id="t-casa"><option value="">Bingo em Casa (padrão)</option>${casas.filter(c => c.link).map(c => `<option value="${esc(c.id)}" ${t.casa === c.id ? "selected" : ""}>${esc(c.nome || c.id)}</option>`).join("")}</select></label>
       <div class="g2"><label>Odd total<input id="t-odd" inputmode="decimal" placeholder="3.22" value="${esc(t.odd || "")}" maxlength="8"></label>
         <label>Código de reserva<input id="t-cod" placeholder="17059B1" value="${esc(t.codigo || "")}" maxlength="24" autocapitalize="characters"></label></div>
       <p class="hint">O código de reserva é o que a Bingo em Casa mostra quando você monta o bilhete lá e toca em reservar/compartilhar.<br>O nível de risco pinta o bilhete no app, do verde (muito seguro) ao vermelho (muito arriscado).</p>
@@ -411,7 +712,10 @@ function ticketForm(t) {
     if (sel.some(x => !x.jogo || !x.mercado)) return er("Cada linha precisa do jogo e do palpite.");
     if (!codigo && !confirm("Sem código de reserva, o botão Apostar abre só o link de cadastro da casa, sem o bilhete montado. Salvar assim mesmo?")) return;
     save.disabled = true;
-    const data = {date, tipo, odd, codigo, sel, order: TIPOS.includes(tipo) ? TIPOS.indexOf(tipo) : 9, updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
+    const casaId = document.getElementById("t-casa").value;
+    const casaObj = casas.find(c => c.id === casaId);
+    const data = {date, tipo, odd, codigo, sel, casa: casaId, casaLink: casaObj ? casaObj.link : "",
+      order: TIPOS.includes(tipo) ? TIPOS.indexOf(tipo) : 9, updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
     try {
       if (isNew) await F.addDoc(F.collection(db, "tickets"), {...data, createdAt: F.serverTimestamp()});
       else await F.updateDoc(F.doc(db, "tickets", t.id), data);
@@ -422,13 +726,30 @@ function ticketForm(t) {
 
 A.getRedirectResult(auth).catch(() => {});
 let denied = "";
-A.onAuthStateChanged(auth, u => {
+const ehAdmin = u => { const e = String((u && u.email) || "").toLowerCase();
+  return !!e && (admins.includes(e) || admsExtra.includes(e)); };
+A.onAuthStateChanged(auth, async u => {
   if (unsub) { unsub(); unsub = null; }
   if (unsubT) { unsubT(); unsubT = null; }
+  if (unsubD) { unsubD(); unsubD = null; }
+  if (unsubC) { unsubC(); unsubC = null; }
   modal.hidden = true;
+  if (unsubA) { unsubA(); unsubA = null; }
   if (!u) { const m = denied; denied = ""; return loginView(m); }
-  if (!admins.includes((u.email || "").toLowerCase())) { denied = "Essa conta não é administradora."; A.signOut(auth); return; }
   root.innerHTML = `<div class="wrap muted" style="text-align:center;padding-top:40vh">Carregando…</div>`;
+  // a lista de administradores vem do banco; o dono está fixo no código
+  try {
+    const cfg = await F.getDoc(F.doc(db, "config", "admins"));
+    const d = cfg.exists() ? cfg.data() : {};
+    admsExtra = (Array.isArray(d.emails) ? d.emails : []).map(e => String(e).toLowerCase());
+  } catch (e) { admsExtra = []; }
+  if (!ehAdmin(u)) { denied = "Essa conta não é administradora."; A.signOut(auth); return; }
+  souDono = admins.includes(String(u.email || "").toLowerCase());
+  if (souDono) unsubA = F.onSnapshot(F.doc(db, "config", "admins"), s => {
+    const d = s.data() || {};
+    admsExtra = (Array.isArray(d.emails) ? d.emails : []).map(e => String(e).toLowerCase());
+    if (modal.hidden && tab === "adm") view();
+  }, () => {});
   unsub = F.onSnapshot(F.collection(db, "users"), s => {
     users = s.docs.map(d => ({id: d.id, ...d.data()}));
     if (modal.hidden) view();
@@ -441,6 +762,14 @@ A.onAuthStateChanged(auth, u => {
     tickets = s.docs.map(d => ({id: d.id, ...d.data()}));
     if (modal.hidden && tab === "tk") view();
   }, e => { ticketsErr = true; if (modal.hidden && tab === "tk") view(); });
+  unsubD = F.onSnapshot(F.collection(db, "desfalques"), s => {
+    desf = s.docs.map(d => ({id: d.id, ...d.data()}));
+    if (modal.hidden && tab === "dq") view();
+  }, e => console.warn("desfalques", e && e.code));
+  unsubC = F.onSnapshot(F.collection(db, "casas"), s => {
+    casas = s.docs.map(d => ({id: d.id, ...d.data()}));
+    if (modal.hidden && (tab === "casas" || tab === "tk")) view();
+  }, e => console.warn("casas", e && e.code));
 });
 setInterval(() => { if (auth.currentUser && users.length && modal.hidden && !document.activeElement?.matches("input,select")) view(); }, 60000);
 </script>
