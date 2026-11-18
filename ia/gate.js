@@ -253,7 +253,13 @@ async function start() {
   const openApp = (u, d) => {
     document.body.classList.remove("locked");
     gate.hidden = true;
-    window.palUser = {email: u.email || "", name: u.displayName || ""};
+    window.palUser = {
+      email: u.email || d.email || "", name: d.name || u.displayName || "",
+      foto: d.photo || u.photoURL || "", whatsapp: d.whatsapp || "",
+      provider: d.provider || ((u.providerData || []).some(x => x.providerId === "google.com") ? "google" : "email"),
+      criadoEm: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : 0,
+      status: d.status || ""
+    };
     window.palSignOut = () => { if (confirm("Sair da sua conta?")) A.signOut(auth); };
     const ref = F.doc(db, "users", u.uid);
     // Guarda favoritos e bilhete na conta, não só no celular.

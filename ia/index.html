@@ -74,8 +74,28 @@
   .g-warn b{color:var(--yel)}
   .g-warn a,.g-warn button{background:var(--yel);color:#111;font-weight:800;border-radius:12px;padding:11px;text-decoration:none;font-size:14px}
   .brandrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  .brandrow .brand{margin-bottom:0}
-  .hinst{flex:none;padding:8px 14px;border-radius:99px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700;font-size:13px;border:1px solid rgba(25,224,122,.3)}
+  .brandrow .brand{margin-bottom:0;min-width:0}
+  .brandrow .brand h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* celular estreito com 🔥 + Instalar + perfil: o escudo já identifica o app */
+  @media(max-width:400px){.brandrow.apertado .brand h1{display:none}}
+  .hinst{flex:none;padding:8px 13px;border-radius:99px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700;font-size:13px;border:1px solid rgba(25,224,122,.3)}
+  .av-btn{flex:none;width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--card2);display:grid;place-items:center;
+          font-weight:800;font-size:14px;color:var(--txt);border:1.5px solid #2f3842;padding:0}
+  .av-btn:active{opacity:.7}
+  .av-btn img{width:100%;height:100%;object-fit:cover}
+  .pf-top{display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 16px 20px}
+  .pf-foto{width:92px;height:92px;border-radius:50%;overflow:hidden;background:var(--card2);display:grid;place-items:center;
+           font-size:34px;font-weight:800;color:var(--mut);border:2px solid #2f3842}
+  .pf-foto img{width:100%;height:100%;object-fit:cover}
+  .pf-nome{font-size:21px;font-weight:800;text-align:center;letter-spacing:-.2px}
+  .pf-l{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .pf-l:last-child{border:0}
+  .pf-l span{color:var(--mut);font-size:13.5px;flex:none}
+  .pf-l b{font-weight:600;font-size:14.5px;text-align:right;word-break:break-word}
+  .pf-bt{display:block;width:100%;text-align:center;text-decoration:none;padding:13px;border-radius:14px;background:var(--card);
+         color:var(--txt);font-weight:700;font-size:15px;margin-top:9px;border:1px solid var(--line)}
+  .pf-bt.sai{background:rgba(255,90,90,.1);color:var(--red);border-color:rgba(255,90,90,.25)}
+  .pf-bt.inst{background:rgba(25,224,122,.12);color:var(--green);border-color:rgba(25,224,122,.3)}
   .retry{display:inline-block;margin-top:14px;padding:11px 22px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
   .quiet .fade{animation:none}
   .acct{margin:0 16px 8px;color:#5f6b77;font-size:12px;text-align:center}
@@ -1024,7 +1044,7 @@ async function analyze(id) {
 /* ---------- telas ---------- */
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
-const acct = () => window.palUser ? `<p class="acct">${esc(window.palUser.email || "")}<button onclick="window.palSignOut&&window.palSignOut()">Sair da conta</button></p>` : "";
+const acct = () => window.palUser ? `<p class="acct"><button onclick="go('perfil')">${esc(window.palUser.email || "")} · meu perfil</button></p>` : "";
 const credit = `<p class="note">+18 · Aposte com responsabilidade.<br><a href="termos/" style="color:#5f6b77">Termos de uso e privacidade</a><br><a href="https://sportscore.com/" rel="dofollow" target="_blank" title="Sports data by SportScore" style="color:#5f6b77;font-size:11px;text-decoration:none">Powered by SportScore</a></p>`;
 
 let dayCache = {};
@@ -1060,7 +1080,7 @@ function resumoView() {
 }
 const isHome = () => !location.hash.slice(1) && homeTab === "jogos";
 async function homeView() {
-  const head = `<div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${fogo()}${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar app</button>` : ""}</div>
+  const head = `<div class="brandrow ${canInstall ? "apertado" : ""}"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${fogo()}${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar</button>` : ""}${avatarBtn()}</div>
     <div class="seg"><button class="${homeTab === "jogos" ? "on" : ""}" onclick="homeTab='jogos';render();window.scrollTo(0,0)">Partidas</button><button class="${homeTab === "palpites" ? "on" : ""}" onclick="homeTab='palpites';render();window.scrollTo(0,0)">Palpites</button></div>`;
   if (homeTab === "palpites") {
     const r = readyView();
@@ -1296,6 +1316,44 @@ async function timesView() {
   return html + `<div style="padding:4px 16px 0"><button class="add" onclick="openFavs(false)">+ Adicionar ou remover times</button></div>` + credit;
 }
 
+/* ---------- perfil: os dados do cadastro, só para ver ---------- */
+const iniciais = n => String(n || "").trim().split(/\s+/).slice(0, 2).map(x => x[0] || "").join("").toUpperCase() || "?";
+function avatarBtn() {
+  const u = window.palUser;
+  if (!u) return "";
+  return `<button class="av-btn" onclick="go('perfil')" aria-label="Meu perfil" title="Meu perfil">${
+    u.foto ? `<img src="${esc(u.foto)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${esc(iniciais(u.name || u.email))}'))">`
+           : esc(iniciais(u.name || u.email))}</button>`;
+}
+function perfilView() {
+  const u = window.palUser;
+  const head = `<div class="top"><div class="tbar"><button class="tback" onclick="go('')" aria-label="Voltar">←</button><h1>Meu <span>perfil</span></h1></div></div>`;
+  if (!u) return head + `<div class="empty">Entre na sua conta para ver o perfil.</div>` + credit;
+  const wpp = String(u.whatsapp || "").replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3");
+  const desde = u.criadoEm ? new Date(u.criadoEm).toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "long", year: "numeric"}) : "";
+  const linha = (rot, val) => val ? `<div class="pf-l"><span>${rot}</span><b>${esc(val)}</b></div>` : "";
+  return head + `<div class="pf-top">
+      <div class="pf-foto">${u.foto ? `<img src="${esc(u.foto)}" alt="" referrerpolicy="no-referrer" onerror="this.replaceWith(document.createTextNode('${esc(iniciais(u.name || u.email))}'))">` : esc(iniciais(u.name || u.email))}</div>
+      <div class="pf-nome">${esc(u.name || "Sem nome")}</div>
+      ${window.palStreak >= 2 ? `<span class="fire">🔥 ${window.palStreak} dias seguidos</span>` : ""}
+    </div>
+    <div class="box">
+      ${linha("E-mail", u.email)}
+      ${linha("WhatsApp", wpp)}
+      ${linha("Entrou com", u.provider === "google" ? "Conta Google" : "E-mail e senha")}
+      ${linha("Membro desde", desde)}
+      ${linha("Situação", u.status === "approved" ? "Acesso liberado" : u.status === "pending" ? "Aguardando aprovação" : u.status)}
+      ${favs && favs.length ? `<div class="pf-l"><span>Meus times</span><b>${favs.length} time${favs.length > 1 ? "s" : ""}</b></div>` : ""}
+    </div>
+    <p class="note" style="margin:10px 16px">Esses dados são só para consulta e não podem ser alterados aqui.<br>Para corrigir alguma coisa ou apagar seu cadastro, fale com um administrador.</p>
+    <div style="padding:0 16px">
+      ${favs ? `<button class="pf-bt" onclick="go('times')">Meus times favoritos</button>` : ""}
+      ${canInstall ? `<button class="pf-bt inst" onclick="window.palInstall&&window.palInstall()">Instalar o app no celular</button>` : ""}
+      <a class="pf-bt" href="termos/">Termos de uso e privacidade</a>
+      <button class="pf-bt sai" onclick="window.palSignOut&&window.palSignOut()">Sair da conta</button>
+    </div>` + credit;
+}
+
 /* ---------- bolão: chuta o placar, ganha ponto ---------- */
 let bolaoTab = "hoje", bolaoMeus = null, bolaoRank = null, bolaoDia = "";
 const pontosDe = (g, m) => {
@@ -1318,7 +1376,7 @@ async function salvarPalpite(id, el) {
   } catch (e) { console.error(e); toast("Não deu para salvar"); }
 }
 async function bolaoView() {
-  const head = `<div class="top"><div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Bo<span>lão</span></h1></button>${fogo()}</div>
+  const head = `<div class="top"><div class="brandrow"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Bo<span>lão</span></h1></button>${fogo()}${avatarBtn()}</div>
     <div class="seg"><button class="${bolaoTab === "hoje" ? "on" : ""}" onclick="bolaoTab='hoje';render()">Palpitar</button><button class="${bolaoTab === "rank" ? "on" : ""}" onclick="bolaoTab='rank';render()">Ranking</button></div></div>`;
   if (!window.palBolao) return head + `<div class="empty">O bolão precisa da sua conta. Entre de novo para jogar.</div>` + credit;
 
@@ -1411,6 +1469,7 @@ async function render(keepFocus, quiet) {
     else if (h === "bilhete") html = slipView();
     else if (h === "times") html = await timesView();
     else if (h === "bolao") html = await bolaoView();
+    else if (h === "perfil") html = perfilView();
     else html = await homeView();
   } catch (e) {
     console.error("Palpiteiro render", e);
@@ -1515,6 +1574,6 @@ function gateFail() {
 }
 window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=5" onerror="gateFail()"></script>
+<script type="module" src="gate.js?v=6" onerror="gateFail()"></script>
 </body>
 </html>
