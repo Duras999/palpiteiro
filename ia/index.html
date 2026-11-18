@@ -539,7 +539,9 @@ function conferirMercado(mk, placar, m) {
   if ((r = /^Vitória do (.+)$/.exec(mk))) return r[1] === hn ? h > a : r[1] === an ? a > h : null;
   if ((r = /^(.+) ou empate$/.exec(mk))) return r[1] === hn ? h >= a : r[1] === an ? a >= h : null;
   if ((r = /^(.+) marca: Sim$/.exec(mk))) return r[1] === hn ? h > 0 : r[1] === an ? a > 0 : null;
-  return null;
+  if ((r = /^(.+) -1 \(vence por 2 ou mais\)$/.exec(mk))) return r[1] === hn ? h - a >= 2 : r[1] === an ? a - h >= 2 : null;
+  if ((r = /^(.+) \+1 \(não perde por 2 ou mais\)$/.exec(mk))) return r[1] === hn ? a - h < 2 : r[1] === an ? h - a < 2 : null;
+  return null;   // cartões e primeiro tempo não dá para conferir só com o placar final
 }
 function registrarPalpites(id, m, lista) {
   if (!window.palCalibra || !lista || !lista.length) return;
@@ -965,7 +967,8 @@ async function teamForm(name) {
   const res = fin.map(m => {
     const home = m.home === (t.team?.name || name) || slugify(m.home) === slug;
     const gf = +(home ? m.home_score : m.away_score), ga = +(home ? m.away_score : m.home_score);
-    return {gf, ga, r: gf > ga ? "V" : gf === ga ? "E" : "D", opp: home ? m.away : m.home, home, date: m.time, url: m.url};
+    return {gf, ga, r: gf > ga ? "V" : gf === ga ? "E" : "D", opp: home ? m.away : m.home, home,
+            date: m.time, url: m.url, comp: m.competition || ""};
   });
   return {slug, res};
 }
@@ -1003,11 +1006,19 @@ function sequences(team, logo, s) {
 /* O jogo de ontem diz mais que o de dois meses atrás: cada jogo mais antigo pesa menos. */
 const DECAI = 0.85;
 const mix = (a, b, p) => a * (1 - p) + b * p;
-function wstats(res) {
+/* Jogo de outra competição conta menos: 3 a 0 na copa contra time de divisão
+   inferior não diz o mesmo que 3 a 0 no campeonato nacional. */
+const mesmaComp = (a, b) => {
+  const n = x => String(x || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const x = n(a), y = n(b);
+  return !x || !y ? true : x === y;
+};
+const PESO_OUTRA = 0.65;
+function wstats(res, comp) {
   if (!res || !res.length) return null;
   let W = 0, o25 = 0, btts = 0, scored = 0, conceded = 0, pts = 0, gf = 0, ga = 0;
   res.forEach((x, i) => {
-    const w = Math.pow(DECAI, i);
+    const w = Math.pow(DECAI, i) * (comp && !mesmaComp(x.comp, comp) ? PESO_OUTRA : 1);
     W += w;
     if (x.gf + x.ga > 2.5) o25 += w;
     if (x.gf > 0 && x.ga > 0) btts += w;
@@ -1020,11 +1031,11 @@ function wstats(res) {
 }
 /* Time pode ser ótimo em casa e ruim fora: separa por mando, mas sem jogar fora o resto
    (a amostra só de casa, ou só de fora, é pequena demais sozinha). */
-function venueStats(res, emCasa) {
-  const todos = wstats(res);
+function venueStats(res, emCasa, comp) {
+  const todos = wstats(res, comp);
   if (!todos) return null;
   const sub = (res || []).filter(x => !!x.home === emCasa);
-  const v = wstats(sub);
+  const v = wstats(sub, comp);
   const usaMando = !!v && v.n >= 3;
   const base = usaMando ? sub : res;
   const cnt = {
@@ -1081,7 +1092,8 @@ function semDados(H, A) {
 function picks(m, H, A, h2h, table) {
   const P = [];
   if (semDados(H, A)) return P;
-  const h = venueStats(H.res, true), a = venueStats(A.res, false);
+  const comp = m.competition || m.lname || "";
+  const h = venueStats(H.res, true, comp), a = venueStats(A.res, false, comp);
   if (!h || !a || !h.n || !a.n) return P;
   const hn = short(m.home), an = short(m.away);
   const hh = h2hStats(h2h, m.home);
@@ -1114,10 +1126,22 @@ function picks(m, H, A, h2h, table) {
     add(`${hn} marca: Sim`, 40 + (h.scored + a.conceded) * 25, `${hn} marcou em ${h.cnt.scored} dos ${ondeH} e ${an} sofreu gol em ${a.cnt.conceded} dos ${ondeA}.`);
   if (a.scored >= .8 && h.conceded >= .65)
     add(`${an} marca: Sim`, 38 + (a.scored + h.conceded) * 25, `${an} marcou em ${a.cnt.scored} dos ${ondeA} e ${hn} sofreu gol em ${h.cnt.conceded} dos ${ondeH}.`);
-  return P.sort((x, y) => y.conf - x.conf).slice(0, 3);
+  // Handicap: ganhar por 2+ (dar 1 de vantagem) ou não perder por 2+ (receber 1)
+  const folga = (res, lado) => { const n = res.length || 1;
+    return {g2: res.filter(x => x.gf - x.ga >= 2).length / n, p2: res.filter(x => x.ga - x.gf >= 2).length / n, n: res.length, lado}; };
+  const fgh = folga(H.res.filter(x => x.home), "em casa"), fga = folga(A.res.filter(x => !x.home), "fora");
+  const fhT = fgh.n >= 3 ? fgh : folga(H.res, "últimos jogos"), faT = fga.n >= 3 ? fga : folga(A.res, "últimos jogos");
+  if (d >= 1.0 && fhT.g2 >= .45 && faT.p2 >= .3)
+    add(`${hn} -1 (vence por 2 ou mais)`, 40 + (fhT.g2 + faT.p2) * 28,
+      `${hn} venceu por 2 ou mais em ${Math.round(fhT.g2 * fhT.n)} dos ${fhT.n} jogos ${fhT.lado}, e ${an} perdeu por 2 ou mais em ${Math.round(faT.p2 * faT.n)} dos ${faT.n} ${faT.lado}.`);
+  if (d <= -.3 && faT.p2 <= .15 && fhT.g2 <= .25)
+    add(`${an} +1 (não perde por 2 ou mais)`, 52 + (1 - faT.p2 - fhT.g2) * 22,
+      `${an} só perdeu por 2 ou mais em ${Math.round(faT.p2 * faT.n)} dos ${faT.n} jogos ${faT.lado}, e ${hn} raramente ganha por essa margem.`);
+  return P.sort((x, y) => y.conf - x.conf).slice(0, 4);
 }
 function winProb(H, A, m, table) {
-  const h = venueStats(H.res, true), a = venueStats(A.res, false);
+  const comp = (m && (m.competition || m.lname)) || "";
+  const h = venueStats(H.res, true, comp), a = venueStats(A.res, false, comp);
   if (!h || !a) return {h: 33, d: 34, a: 33};
   const th = tableStats(table, H.slug, m && m.home), ta = tableStats(table, A.slug, m && m.away);
   const d = (forca(h, th) + .30) - forca(a, ta);   // +0,30 = vantagem de jogar em casa
@@ -1126,23 +1150,29 @@ function winProb(H, A, m, table) {
   const hh = Math.round(ph * 100), aa = Math.round((1 - pd - ph) * 100);
   return {h: hh, d: 100 - hh - aa, a: aa};
 }
+// Numa busca só, pega cartões e placar do primeiro tempo dos últimos jogos.
 async function cardStats(T) {
   const one = async x => {
     const slug = (x.url || "").split("/").filter(Boolean)[2];
     if (!slug) return null;
-    const key = "iagc:" + slug + "|" + x.date;
+    const key = "iagc2:" + slug + "|" + x.date;
     let c = null;
     try { c = JSON.parse(localStorage.getItem(key) || "null"); } catch (e) {}
     if (!c) {
       const r = await fetch(`${API}/match/?sport=football&slug=${slug}`).catch(() => null);
       const d = r && r.ok ? await r.json().catch(() => null) : null, mm = d && d.match;
-      if (!mm || mm.time !== x.date || !Array.isArray(mm.incidents) || !mm.incidents.length) return null;
-      c = mm.incidents.filter(i => i.is_card).map(i => ({side: i.side, type: i.type}));
+      if (!mm || mm.time !== x.date) return null;
+      const cards = Array.isArray(mm.incidents) ? mm.incidents.filter(i => i.is_card).map(i => ({side: i.side, type: i.type})) : [];
+      const h1 = +mm.home_ht_score, a1 = +mm.away_ht_score;
+      c = {cards, ht: Number.isFinite(h1) && Number.isFinite(a1) ? [h1, a1] : null};
+      if (!cards.length && !c.ht) return null;
       store(key, JSON.stringify(c));
     }
     const side = x.home ? "home" : "away";
-    const mine = c.filter(i => i.side === side), opp = c.filter(i => i.side !== side);
-    return {y: mine.filter(i => /yellow/i.test(i.type)).length, r: mine.filter(i => /red/i.test(i.type)).length, tot: c.length, opp: opp.length};
+    const mine = c.cards.filter(i => i.side === side), opp = c.cards.filter(i => i.side !== side);
+    const ht = c.ht ? {gf: x.home ? c.ht[0] : c.ht[1], ga: x.home ? c.ht[1] : c.ht[0]} : null;
+    return {y: mine.filter(i => /yellow/i.test(i.type)).length, r: mine.filter(i => /red/i.test(i.type)).length,
+            tot: c.cards.length, opp: opp.length, temCartao: c.cards.length > 0, ht};
   };
   const games = [];
   for (const x of T.res.slice(0, 5)) {
@@ -1150,10 +1180,38 @@ async function cardStats(T) {
     if (!g) { await new Promise(r => setTimeout(r, 400)); g = await one(x).catch(() => null); }
     games.push(g);
   }
-  const g = games.filter(Boolean), n = g.length;
-  if (!n) return null;
-  const sum = k => g.reduce((a, x) => a + x[k], 0);
-  return {n, y: sum("y") / n, r: sum("r"), tot: sum("tot") / n, opp: sum("opp") / n};
+  const g = games.filter(Boolean), comCartao = g.filter(x => x.temCartao), hts = g.filter(x => x.ht).map(x => x.ht);
+  if (!g.length) return null;
+  const n = comCartao.length;
+  const sum = k => comCartao.reduce((a, x) => a + x[k], 0);
+  return {n, y: n ? sum("y") / n : 0, r: sum("r"), tot: n ? sum("tot") / n : 0, opp: n ? sum("opp") / n : 0,
+    ht: hts.length ? {n: hts.length, over05: hts.filter(x => x.gf + x.ga >= 1).length / hts.length,
+      empate: hts.filter(x => x.gf === x.ga).length / hts.length, media: hts.reduce((a, x) => a + x.gf + x.ga, 0) / hts.length} : null};
+}
+/* Mercados que só dá para calcular depois que os detalhes chegam:
+   cartões e primeiro tempo. Entram na lista assim que ficam prontos. */
+function picksExtras(m, A) {
+  const P = [], hn = short(m.home), an = short(m.away);
+  const ch = A.cards && A.cards.h, ca = A.cards && A.cards.a;
+  /* Teto mais baixo que os mercados principais: cartões e primeiro tempo são
+     apostas de apoio, não devem roubar o lugar do palpite do jogo. */
+  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(82, Math.round(score))), why, extra: true});
+  if (ch && ca && ch.n >= 3 && ca.n >= 3) {
+    const med = (ch.tot + ca.tot) / 2;   // média de cartões por jogo, contando os dois lados
+    if (med >= 5.2) add("Mais de 4.5 cartões", 42 + Math.min(med - 4.5, 3) * 13,
+      `Os jogos do ${hn} tiveram ${ch.tot.toFixed(1)} cartões em média e os do ${an}, ${ca.tot.toFixed(1)} — cerca de ${med.toFixed(1)} por jogo.`);
+    else if (med <= 3.2) add("Menos de 4.5 cartões", 44 + (4.5 - med) * 12,
+      `Jogo calmo pelos números: ${ch.tot.toFixed(1)} cartões por jogo do ${hn} e ${ca.tot.toFixed(1)} do ${an}.`);
+  }
+  const th = ch && ch.ht, ta = ca && ca.ht;
+  if (th && ta && th.n >= 3 && ta.n >= 3) {
+    const o05 = (th.over05 + ta.over05) / 2, emp = (th.empate + ta.empate) / 2;
+    if (o05 >= .75) add("Mais de 0.5 gol no 1º tempo", 40 + o05 * 50,
+      `Teve gol no primeiro tempo em ${Math.round(th.over05 * th.n)} dos ${th.n} jogos do ${hn} e ${Math.round(ta.over05 * ta.n)} dos ${ta.n} do ${an}.`);
+    if (emp >= .55) add("Empate no 1º tempo", 38 + emp * 55,
+      `O primeiro tempo terminou empatado em ${Math.round(th.empate * th.n)} dos ${th.n} jogos do ${hn} e ${Math.round(ta.empate * ta.n)} dos ${ta.n} do ${an}.`);
+  }
+  return P;
 }
 const analysis = {};
 async function analyze(id) {
@@ -1169,7 +1227,12 @@ async function analyze(id) {
   const R = analysis[id] = {H, A, h2h, table, cards: null, cardsBusy: true, seq, picks: picks(m, H, A, h2h, table)};
   Promise.all([cardStats(H).catch(() => null), cardStats(A).catch(() => null)]).then(([h, a]) => {
     R.cards = {h, a}; R.cardsBusy = false;
-    if (location.hash.slice(1) === "jogo-" + id && tab === "seq") render(false, true);
+    const extras = picksExtras(m, R);
+    if (extras.length) {
+      R.picks = [...R.picks.filter(x => !x.extra), ...extras].sort((x, y) => y.conf - x.conf).slice(0, 5);
+      registrarPalpites(id, m, R.picks);
+    }
+    if (location.hash.slice(1) === "jogo-" + id) render(false, true);
   });
   registrarPalpites(id, m, R.picks);
   return R;
