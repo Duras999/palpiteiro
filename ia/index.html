@@ -96,6 +96,42 @@
          color:var(--txt);font-weight:700;font-size:15px;margin-top:9px;border:1px solid var(--line)}
   .pf-bt.sai{background:rgba(255,90,90,.1);color:var(--red);border-color:rgba(255,90,90,.25)}
   .pf-bt.inst{background:rgba(25,224,122,.12);color:var(--green);border-color:rgba(25,224,122,.3)}
+  .pf-bt.tk{background:rgba(254,44,85,.12);color:#ff647f;border-color:rgba(254,44,85,.3);display:flex;align-items:center;justify-content:center;gap:9px}
+  .pf-bt svg{width:17px;height:17px;flex:none}
+  .ze{display:flex;align-items:center;gap:12px;margin:4px 16px 12px;background:linear-gradient(135deg,#1a1026,#161b21 60%);
+      border:1px solid #3a2a52;border-radius:20px;padding:13px}
+  .ze-foto{width:52px;height:52px;border-radius:14px;flex:none;background:linear-gradient(135deg,#25f4ee,#fe2c55);
+           display:grid;place-items:center;font-size:25px;overflow:hidden}
+  .ze-foto img{width:100%;height:100%;object-fit:cover}
+  .ze-t{flex:1;min-width:0}
+  .ze-t b{display:block;font-size:15px;font-weight:800;margin-bottom:2px}
+  .ze-t span{color:var(--mut);font-size:12.5px;line-height:1.35;display:block}
+  .ze-bt{flex:none;padding:10px 15px;border-radius:12px;background:#fe2c55;color:#fff;font-weight:800;font-size:13px;text-decoration:none}
+  .dia{background:linear-gradient(150deg,#2a2410,#161b21 60%);border:1px solid #4a3d16;border-radius:22px;margin:4px 16px 14px;padding:15px}
+  .dia-h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .dia-h b{flex:1;font-size:15px;font-weight:800;color:var(--yel)}
+  .dia-j{color:var(--mut);font-size:13px}
+  .dia-m{font-size:19px;font-weight:800;margin:3px 0 10px}
+  .prev{margin-top:14px;max-height:230px;overflow-y:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+  .prev .pv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:14px}
+  .prev .pv:last-child{border:0}
+  .prev .pv i{color:var(--mut);font-size:12.5px;font-style:normal;width:42px;flex:none}
+  .prev .pv span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prev-t{color:var(--mut);font-size:12.5px;text-align:center;margin-top:10px;line-height:1.45}
+  .bemvindo{position:fixed;inset:0;z-index:115;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:22px}
+  .bemvindo[hidden]{display:none}
+  .bv{background:var(--bg);border:1px solid var(--line);border-radius:24px;max-width:380px;width:100%;padding:24px 20px;text-align:center;animation:f .3s ease}
+  .bv .ok{width:66px;height:66px;border-radius:50%;background:rgba(25,224,122,.14);color:var(--green);display:grid;place-items:center;
+          font-size:32px;margin:0 auto 14px}
+  .bv h2{font-size:22px;font-weight:800;margin-bottom:8px}
+  .bv p{color:var(--mut);font-size:14.5px;line-height:1.5;margin-bottom:16px}
+  .bv ul{text-align:left;margin:0 0 18px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+  .bv li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:#cfd6dd;line-height:1.4}
+  .bv li b{color:var(--txt)}
+  .bv li em{font-style:normal;font-size:17px;flex:none;width:24px;text-align:center}
+  .erro-box{text-align:center;padding:34px 22px;color:var(--mut);line-height:1.6}
+  .erro-box .ic{font-size:40px;margin-bottom:10px}
+  .erro-box b{display:block;color:var(--txt);font-size:17px;margin-bottom:6px}
   .retry{display:inline-block;margin-top:14px;padding:11px 22px;border-radius:12px;background:rgba(25,224,122,.12);color:var(--green);font-weight:700}
   .quiet .fade{animation:none}
   .acct{margin:0 16px 8px;color:#5f6b77;font-size:12px;text-align:center}
@@ -159,6 +195,11 @@
   .resumo b{color:var(--txt);font-size:15px;display:block;margin-bottom:3px}
   .resumo .rc{color:var(--green);font-weight:700}
   .resumo button{color:var(--mut);font-size:17px;padding:0 2px;line-height:1;flex:none}
+  .recado{display:flex;align-items:center;gap:11px;margin:0 16px 10px;background:linear-gradient(135deg,#1d2433,#161b21 65%);
+          border:1px solid #30405c;border-radius:18px;padding:12px 13px}
+  .recado span{flex:1;min-width:0;font-size:13.5px;line-height:1.45;color:#cfd6dd}
+  .recado .ic{flex:none;font-size:18px}
+  .recado a{flex:none;padding:9px 14px;border-radius:12px;background:#4c8dff;color:#fff;font-weight:800;font-size:13px;text-decoration:none}
   .bl{background:var(--card);border-radius:18px;margin:10px 16px;padding:12px 13px}
   .bl-h{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--mut);margin-bottom:9px}
   .bl-h b{color:#cfd6dd;font-weight:600}
@@ -370,16 +411,57 @@
 <script>
 /* ===== Palpiteiro — dados reais via SportScore (grátis, sem chave) ===== */
 const API = "https://sportscore.com/api/v1";
+/* Os campeonatos que a gente garante buscando um a um (nunca somem da lista),
+   com nome curto em português. O resto do mundo entra pela busca geral do dia. */
 const LEAGUES = [
   {slug:"brazilian-serie-a", name:"Brasileirão Série A", s:"A", c:"#c8f03c", tc:"#0b0e12"},
   {slug:"brazilian-serie-b", name:"Brasileirão Série B", s:"B", c:"#2b2bd6", tc:"#ffd400"},
   {slug:"conmebol-copa-libertadores", name:"Libertadores", s:"LIB", c:"#c9a227", tc:"#111"},
+  {slug:"conmebol-copa-sudamericana", name:"Sul-Americana", s:"SUL", c:"#f2762e", tc:"#fff"},
   {slug:"uefa-champions-league", name:"Champions League", s:"UCL", c:"#0b1f6b", tc:"#fff"},
   {slug:"english-premier-league", name:"Premier League", s:"PL", c:"#3d0a49", tc:"#fff"},
   {slug:"spanish-laliga", name:"LaLiga", s:"LL", c:"#ff4b44", tc:"#fff"},
-  {slug:"italian-serie-a", name:"Serie A (Itália)", s:"ITA", c:"#0a6cff", tc:"#fff"},
-  {slug:"bundesliga", name:"Bundesliga", s:"BUN", c:"#d20515", tc:"#fff"}
+  {slug:"italian-serie-a", name:"Serie A (Itália)", s:"ITA", c:"#0a6cff", tc:"#fff"}
 ];
+/* Ordem de importância pelo nome que a fonte de dados usa. Serve para pôr
+   os campeonatos que o brasileiro acompanha no topo da lista. */
+const PRIORIDADE = [
+  [/brazilian serie a|brasileir.o s.rie a/i, "Brasileirão Série A"],
+  [/brazilian serie b/i, "Brasileirão Série B"],
+  [/copa do brasil/i, "Copa do Brasil"],
+  [/copa libertadores/i, "Libertadores"],
+  [/copa sudamericana/i, "Sul-Americana"],
+  [/recopa sudamericana/i, "Recopa"],
+  [/champions league/i, "Champions League"],
+  [/europa league/i, "Europa League"],
+  [/conference league/i, "Conference League"],
+  [/premier league/i, "Premier League"],
+  [/laliga|la liga/i, "LaLiga"],
+  [/italian serie a/i, "Serie A (Itália)"],
+  [/bundesliga/i, "Bundesliga"],
+  [/ligue 1/i, "Ligue 1"],
+  [/primeira liga|liga portugal/i, "Liga Portugal"],
+  [/eredivisie/i, "Eredivisie"],
+  [/liga mx/i, "Liga MX"],
+  [/major league soccer/i, "MLS"],
+  [/argentin.*(primera|liga profesional)/i, "Argentino"],
+  [/paraguayan primera/i, "Paraguai"],
+  [/campeonato paulista/i, "Paulista"],
+  [/campeonato carioca/i, "Carioca"],
+  [/campeonato mineiro/i, "Mineiro"],
+  [/campeonato gaucho/i, "Gaúcho"],
+  [/copa america/i, "Copa América"],
+  [/world cup|copa do mundo/i, "Copa do Mundo"]
+];
+// Campeonatos de pouco interesse ficam escondidos até a pessoa pedir para ver tudo.
+const CHATOS = /women|feminin|u1[5-9]\b|u2[0-3]\b|sub-?1[5-9]|youth|juvenil|reserve|beloften|futsal|beach|friendl|amistoso/i;
+function infoLiga(nome) {
+  const n = String(nome || "Outros");
+  for (let i = 0; i < PRIORIDADE.length; i++) if (PRIORIDADE[i][0].test(n)) return {nome: PRIORIDADE[i][1], prio: i};
+  return {nome: n, prio: 900 + (CHATOS.test(n) ? 100 : 0)};
+}
+const corDoNome = n => { let h = 0; for (const c of String(n)) h = (h * 31 + c.charCodeAt(0)) % 360; return `hsl(${h} 45% 32%)`; };
+const siglaDoNome = n => String(n).replace(/[^A-Za-zÀ-ú ]/g, "").split(/\s+/).filter(Boolean).slice(0, 3).map(w => w[0]).join("").toUpperCase().slice(0, 3) || "?";
 const TZ = "America/Sao_Paulo";
 
 /* ---------- bilhetes prontos (código de reserva da Bingo em Casa) ---------- */
@@ -415,11 +497,26 @@ function linkDoBilhete(b) {
   if (b.codigo) return base ? base.split("{q}")[0] + encodeURIComponent(b.codigo) : CASA + encodeURIComponent(b.codigo);
   return base ? base.replace("{q}", "") : CASA_SPORTS;
 }
+// O bilhete de uma seleção só é, por definição, o palpite mais forte do dia.
+const palpiteDoDia = list => list.find(b => (b.sel || []).length === 1) || null;
+function cardDoDia(b) {
+  if (!b) return "";
+  const r = riscoNome(b.tipo, b.odd), s = b.sel[0];
+  return `<div class="dia fade"><div class="dia-h">⭐<b>Palpite do dia</b>${r ? rskTag(r) : ""}</div>
+    <div class="dia-j">${esc(s.jogo)}${s.hora ? " · " + esc(s.hora) : ""}</div>
+    <div class="dia-m">${esc(s.mercado)}</div>
+    <a class="gen ready-btn" style="margin-top:0" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener"
+       onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`;
+}
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
-  const list = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length);
-  if (!list.length) return "";
-  return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
+  const agora = Date.now();
+  const noAr = b => !b.publicarAs || (b.publicarAs.toMillis ? b.publicarAs.toMillis() : +new Date(b.publicarAs)) <= agora;
+  const todos = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length && noAr(b));
+  if (!todos.length) return "";
+  const dia = palpiteDoDia(todos), list = todos.filter(b => b !== dia);
+  if (!list.length) return cardDoDia(dia);
+  return cardDoDia(dia) + `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
       `<a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`).join("") +
@@ -496,7 +593,7 @@ async function gerarBilhetes() {
       let A = null;
       try { A = await analyze(id); } catch (e) {}
       const p = A && A.picks && A.picks[0];
-      if (p) melhores.push({conf: p.conf, jogo: `${short(m.home)} x ${short(m.away)}`, hora: hhmm(m.time), mercado: p.mk});
+      if (p) melhores.push({conf: p.conf, id, jogo: `${short(m.home)} x ${short(m.away)}`, hora: hhmm(m.time), mercado: p.mk});
       await new Promise(r => setTimeout(r, 120));
     }
     melhores.sort((a, b) => b.conf - a.conf);
@@ -508,7 +605,7 @@ async function gerarBilhetes() {
       const ch = chanceBilhete(sel), r = risco(ch);
       if (lista.some(x => x.tipo === r.lbl)) continue;
       lista.push({date: dia, tipo: r.lbl, odd: "", codigo: "", order: RISCOS.findIndex(x => x.lbl === r.lbl),
-        sel: sel.map(x => ({jogo: x.jogo, hora: x.hora, mercado: x.mercado})), chance: ch});
+        sel: sel.map(x => ({id: x.id || "", jogo: x.jogo, hora: x.hora, mercado: x.mercado})), chance: ch});
     }
     gerados = lista; gerando = "";
   } catch (e) { console.error(e); gerando = ""; toast("Não deu para montar agora"); }
@@ -522,6 +619,29 @@ async function salvarGerados() {
   catch (e) { console.error(e); gerando = ""; toast("Não deu para salvar"); }
   render(false, true);
 }
+const BVKEY = "pal-bemvindo";
+window.palBemVindo = () => {
+  let visto = ""; try { visto = localStorage.getItem(BVKEY) || ""; } catch (e) {}
+  if (visto === "1") return;
+  store(BVKEY, "1");
+  let el = document.getElementById("bemvindo");
+  if (!el) { el = document.createElement("div"); el.id = "bemvindo"; el.className = "bemvindo"; document.body.appendChild(el); }
+  el.hidden = false;
+  const nome = String((window.palUser && window.palUser.name || "").trim().split(/\s+/)[0] || "");
+  el.innerHTML = `<div class="bv"><div class="ok">✓</div>
+    <h2>Acesso liberado${nome ? ", " + esc(nome) : ""}!</h2>
+    <p>Bem-vindo ao Palpiteiro. Em 30 segundos você aprende tudo:</p>
+    <ul>
+      <li><em>⚽</em><span><b>Partidas</b> — toque num jogo para ver sequências, confrontos e os palpites com a chance de cada um.</span></li>
+      <li><em>⭐</em><span><b>Palpites</b> — os bilhetes prontos do dia, do mais seguro ao mais arriscado.</span></li>
+      <li><em>🏆</em><span><b>Bolão</b> — chute o placar dos jogos e dispute o ranking do mês. É de graça.</span></li>
+      <li><em>🔖</em><span><b>Meus times</b> — escolha seus times e os jogos deles aparecem primeiro.</span></li>
+    </ul>
+    <button class="gen" id="bv-ok">Começar</button></div>`;
+  el.querySelector("#bv-ok").onclick = () => { el.hidden = true; el.innerHTML = ""; };
+  el.onclick = e => { if (e.target === el) { el.hidden = true; el.innerHTML = ""; } };
+};
+
 const AUTOKEY = "pal-autogera";
 function talvezGerarSozinho() {
   if (!window.palIsAdmin || gerando || gerados) return;
@@ -612,7 +732,7 @@ function toggleLive(){liveOnly=!liveOnly;if(liveOnly){dayOff=0;dayCache={};for(c
 function goHome(){dayOff=0;filter="";tab="seq";homeTab="jogos";liveOnly=false;if(location.hash.slice(1)){location.hash=""}else{render();window.scrollTo({top:0,behavior:"smooth"})}}
 
 /* ---------- estado ---------- */
-let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos", liveOnly = false;
+let dayOff = 0, filter = "", games = {}, tab = "seq", homeTab = "jogos", liveOnly = false, todosCamp = false;
 let slip = []; try { slip = JSON.parse(localStorage.getItem("iag-slip2") || "[]"); } catch (e) {}
 if (!Array.isArray(slip)) slip = [];
 // tira do bilhete os jogos que já acabaram faz tempo
@@ -800,21 +920,35 @@ async function loadDay(off, fresh) {
   const next = new Date(new Date(day + "T12:00:00Z").getTime() + 86400000).toISOString().slice(0, 10);
   const days = [day, next];
   const ttl = fresh ? 0 : off === 0 ? 1 : 10;
-  const out = [];
-  let fails = 0;
-  await Promise.all(LEAGUES.map(async L => {
-    const lists = await Promise.all(days.map(d =>
-      getJSON(`${API}/fixtures/?sport=football&date=${d}&competition=${L.slug}&limit=100`, ttl).catch(() => { fails++; return {matches: []}; })));
-    const seen = new Set();
-    const ms = lists.flatMap(x => x.matches || []).filter(m => {
-      const id = mid(m); if (!id || !m.time || seen.has(id)) return false; seen.add(id);
-      return localDay(new Date(m.time)) === day;
-    }).sort((a, b) => a.time.localeCompare(b.time));
-    ms.forEach(m => { m.lname = L.name; m.lslug = L.slug; games[mid(m)] = m; });
-    if (ms.length) out.push({L, ms});
-  }));
-  if (fails === LEAGUES.length * days.length) throw new Error("sem dados");
-  return LEAGUES.map(L => out.find(o => o.L === L)).filter(Boolean);
+  let fails = 0, tentou = 0;
+  const pega = u => { tentou++; return getJSON(u, ttl).catch(() => { fails++; return {matches: []}; }); };
+  // 1) tudo o que tem no mundo nesses dois dias  2) os principais um a um, para nunca faltarem
+  const principais = await Promise.all(LEAGUES.flatMap(L =>
+    days.map(d => pega(`${API}/fixtures/?sport=football&date=${d}&competition=${L.slug}&limit=100`).then(r => ({r, L})))));
+  const geral = await Promise.all(days.map(d => pega(`${API}/fixtures/?sport=football&date=${d}&limit=200`).then(r => ({r, L: null}))));
+  const tudo = [...principais, ...geral];
+  if (fails === tentou) throw new Error("sem dados");
+  const seen = new Set(), porLiga = new Map();
+  for (const {r: lista, L: liga} of tudo) for (const m of (lista.matches || [])) {
+    const id = mid(m);
+    if (!id || !m.time || seen.has(id)) continue;
+    if (localDay(new Date(m.time)) !== day) continue;
+    seen.add(id);
+    const inf = infoLiga(m.competition || (liga && liga.name));
+    m.lname = liga ? liga.name : inf.nome;
+    m.lslug = liga ? liga.slug : "";
+    m.lprio = liga ? LEAGUES.indexOf(liga) : inf.prio;
+    games[id] = m;
+    const chave = m.lname;
+    if (!porLiga.has(chave)) porLiga.set(chave, {L: liga
+      ? {...liga, prio: m.lprio, logo: m.competition_logo || ""}
+      : {name: chave, prio: m.lprio, c: corDoNome(chave), tc: "#fff", s: siglaDoNome(chave), logo: m.competition_logo || ""}, ms: []});
+    porLiga.get(chave).ms.push(m);
+  }
+  const grupos = [...porLiga.values()];
+  grupos.forEach(g => g.ms.sort((a, b) => a.time.localeCompare(b.time)));
+  grupos.sort((a, b) => a.L.prio - b.L.prio || a.L.name.localeCompare(b.L.name, "pt-BR"));
+  return grupos;
 }
 
 /* ---------- forma do time ---------- */
@@ -1030,7 +1164,7 @@ async function analyze(id) {
   H.st = stats(H.res6); A.st = stats(A.res6);
   const [h2h, table] = await Promise.all([
     getJSON(`${API}/h2h/?team1=${H.slug}&team2=${A.slug}`, 720).catch(() => null),
-    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : null]);
+    m.lslug ? getJSON(`${API}/standings/?sport=football&competition=${m.lslug}`, 60).catch(() => null) : Promise.resolve(null)]);
   const seq = [...sequences(short(m.home), m.home_logo, H.st), ...sequences(short(m.away), m.away_logo, A.st)].sort((x, y) => y.k - x.k);
   const R = analysis[id] = {H, A, h2h, table, cards: null, cardsBusy: true, seq, picks: picks(m, H, A, h2h, table)};
   Promise.all([cardStats(H).catch(() => null), cardStats(A).catch(() => null)]).then(([h, a]) => {
@@ -1042,6 +1176,11 @@ async function analyze(id) {
 }
 
 /* ---------- telas ---------- */
+function telaErro(titulo, texto) {
+  return `<div class="erro-box"><div class="ic">${navigator.onLine ? "🛠️" : "📡"}</div>
+    <b>${esc(titulo)}</b>${esc(texto)}
+    <br><button class="retry" onclick="render()">Tentar de novo</button></div>`;
+}
 const dayLabel = () => dayOff === 0 ? "Hoje" : dayOff === 1 ? "Amanhã" : dayOff === -1 ? "Ontem" :
   new Date(Date.now() + dayOff * 86400000).toLocaleDateString("pt-BR", {timeZone: TZ, weekday: "short", day: "2-digit", month: "2-digit"});
 const acct = () => window.palUser ? `<p class="acct"><button onclick="go('perfil')">${esc(window.palUser.email || "")} · meu perfil</button></p>` : "";
@@ -1078,6 +1217,12 @@ function resumoView() {
   return `<div class="resumo fade"><div class="rx"><b>${ola}${nome ? ", " + esc(nome) : ""}!</b>Hoje tem ${partes.join(" · ")}.</div>
     <button onclick="fecharResumo()" aria-label="Fechar">✕</button></div>`;
 }
+const recadoView = () => {
+  const b = window.palBanner;
+  if (!b || !b.texto) return "";
+  return `<div class="recado fade"><span class="ic">📣</span><span>${esc(b.texto)}</span>${
+    b.link ? `<a href="${esc(b.link)}" target="_blank" rel="noopener">${esc(b.bt || "Abrir")}</a>` : ""}</div>`;
+};
 const isHome = () => !location.hash.slice(1) && homeTab === "jogos";
 async function homeView() {
   const head = `<div class="brandrow ${canInstall ? "apertado" : ""}"><button class="brand home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"><h1>Palpi<span>teiro</span></h1></button>${fogo()}${canInstall ? `<button class="hinst" onclick="window.palInstall&&window.palInstall()">Instalar</button>` : ""}${avatarBtn()}</div>
@@ -1085,7 +1230,7 @@ async function homeView() {
   if (homeTab === "palpites") {
     const r = readyView();
     talvezGerarSozinho();
-    return `<div class="top">${head}</div>` + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + credit;
+    return `<div class="top">${head}</div>` + cardZe() + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + credit;
   }
   const top = `<div class="top">${head}
     <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -1097,12 +1242,14 @@ async function homeView() {
   if (!dayCache[key]) {
     $("#app").innerHTML = top + `<div class="thinking" style="justify-content:center"><span class="dots"><i></i><i></i><i></i></span> Buscando jogos…</div>`;
     try { dayCache[key] = {t: Date.now(), d: await loadDay(off)}; }
-    catch (e) { return top + `<div class="empty">Não consegui carregar os jogos. Confere a internet e tenta de novo.<br><button class="retry" onclick="render()">Tentar de novo</button></div>`; }
+    catch (e) { return top + telaErro("Não consegui buscar os jogos agora", navigator.onLine
+      ? "A fonte de dados de futebol não respondeu. Costuma voltar em alguns minutos."
+      : "Seu celular está sem internet. Conecte no Wi-Fi ou nos dados móveis."); }
     if (off !== dayOff) return null;
   } else refreshDay(off);
   if (!calibraRodou) setTimeout(resolverCalibra, 1500);
   const q = filter.trim().toLowerCase();
-  let html = top + (q || liveOnly ? "" : resumoView()), any = false;
+  let html = top + (q || liveOnly ? "" : recadoView() + resumoView()), any = false;
   if (favs && favs.length && !q) {
     const mine = dayCache[key].d.flatMap(g => g.ms).filter(m => favGame(m) && (!liveOnly || m.status === "live"))
       .sort((a, b) => a.time.localeCompare(b.time));
@@ -1114,15 +1261,22 @@ async function homeView() {
       html += `<p class="favnone">Seus times não jogam ${dayOff === 0 ? "hoje" : "nesse dia"}. <button onclick="go('times')">Ver próximos jogos</button></p>`;
     }
   }
+  let escondidos = 0, jogosEscondidos = 0;
   for (const {L, ms} of dayCache[key].d) {
     const list = ms.filter(m => (!q || (m.home + m.away).toLowerCase().includes(q)) && (!liveOnly || m.status === "live"));
-    if (!list.length) continue; any = true;
-    html += `<div class="league fade"><div class="lhead">${list[0].competition_logo ? `<div class="lbadge img"><img src="${esc(list[0].competition_logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${L.s}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${L.s}</div>`}
-      <div><div class="lname">${L.name}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
+    if (!list.length) continue;
+    // sem busca, os campeonatos menores ficam guardados atrás do botão
+    if (!q && !todosCamp && L.prio >= 900 && !list.some(favGame)) { escondidos++; jogosEscondidos += list.length; continue; }
+    any = true;
+    html += `<div class="league fade"><div class="lhead">${L.logo ? `<div class="lbadge img"><img src="${esc(L.logo)}" alt="" onerror="this.parentNode.classList.remove('img');this.parentNode.style.background='${L.c}';this.parentNode.style.color='${L.tc}';this.parentNode.textContent='${esc(L.s)}'"></div>` : `<div class="lbadge" style="background:${L.c};color:${L.tc}">${esc(L.s)}</div>`}
+      <div><div class="lname">${esc(L.name)}</div><div class="lsub">${list.length} jogo${list.length > 1 ? "s" : ""}</div></div></div>`;
     for (const m of list) html += matchRow(m);
     html += `</div>`;
   }
-  if (!any) html += `<div class="empty">${liveOnly ? "Nenhum jogo ao vivo agora." : `Nenhum jogo ${q ? "encontrado" : "dos campeonatos principais"} nesse dia.`}</div>`;
+  if (escondidos) html += `<div style="padding:4px 16px 2px"><button class="add" style="margin-top:0" onclick="todosCamp=true;render(false,true)">
+    Ver mais ${escondidos} campeonato${escondidos > 1 ? "s" : ""} · ${jogosEscondidos} jogo${jogosEscondidos > 1 ? "s" : ""}</button></div>`;
+  else if (todosCamp && !q) html += `<div style="padding:4px 16px 2px"><button class="add" style="margin-top:0;background:var(--card2);color:var(--mut)" onclick="todosCamp=false;render(false,true)">Mostrar só os campeonatos principais</button></div>`;
+  if (!any) html += `<div class="empty">${liveOnly ? "Nenhum jogo ao vivo agora." : `Nenhum jogo ${q ? "encontrado" : "nesse dia"}.`}</div>`;
   return html + credit;
 }
 
@@ -1176,7 +1330,9 @@ async function detailView(id) {
     </div></div>`;
   if (!analysis[id]) {
     $("#app").innerHTML = head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> Palpiteiro analisando os últimos jogos…</div></div>`;
-    try { await analyze(id); } catch (e) { return head + `<div class="box"><div class="empty">Não consegui buscar os dados desse jogo agora.<br><button class="retry" onclick="render()">Tentar de novo</button></div></div>`; }
+    try { await analyze(id); } catch (e) { return head + telaErro("Não consegui analisar esse jogo", navigator.onLine
+      ? "A fonte de dados não respondeu a tempo. Tente de novo em instantes."
+      : "Seu celular está sem internet."); }
     if (location.hash.slice(1) !== "jogo-" + id) return null;
   }
   const A = analysis[id];
@@ -1316,6 +1472,14 @@ async function timesView() {
   return html + `<div style="padding:4px 16px 0"><button class="add" onclick="openFavs(false)">+ Adicionar ou remover times</button></div>` + credit;
 }
 
+/* ---------- Zé Tabela: liga o app ao canal do TikTok ---------- */
+const TIKTOK = "https://www.tiktok.com/@zetabela";
+const ICONE_TK = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82A4.28 4.28 0 0115.54 3h-3.09v12.4a2.59 2.59 0 01-2.59 2.5 2.59 2.59 0 01-2.59-2.59 2.59 2.59 0 013.3-2.49V9.66a5.7 5.7 0 00-.71-.05A5.68 5.68 0 004.2 15.3a5.68 5.68 0 005.66 5.7 5.68 5.68 0 005.66-5.7V9.01a7.35 7.35 0 004.28 1.38V7.3a4.28 4.28 0 01-3.2-1.48z"/></svg>`;
+const cardZe = () => `<a class="ze fade" href="${TIKTOK}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+    <div class="ze-foto"><img src="icon-192.png?v=3" alt=""></div>
+    <div class="ze-t"><b>Zé Tabela no TikTok</b><span>Os palpites de hoje explicados em vídeo.</span></div>
+    <span class="ze-bt">Assistir</span></a>`;
+
 /* ---------- perfil: os dados do cadastro, só para ver ---------- */
 const iniciais = n => String(n || "").trim().split(/\s+/).slice(0, 2).map(x => x[0] || "").join("").toUpperCase() || "?";
 function avatarBtn() {
@@ -1348,6 +1512,7 @@ function perfilView() {
     <p class="note" style="margin:10px 16px">Esses dados são só para consulta e não podem ser alterados aqui.<br>Para corrigir alguma coisa ou apagar seu cadastro, fale com um administrador.</p>
     <div style="padding:0 16px">
       ${favs ? `<button class="pf-bt" onclick="go('times')">Meus times favoritos</button>` : ""}
+      <a class="pf-bt tk" href="${TIKTOK}" target="_blank" rel="noopener">${ICONE_TK}Seguir o Zé Tabela no TikTok</a>
       ${canInstall ? `<button class="pf-bt inst" onclick="window.palInstall&&window.palInstall()">Instalar o app no celular</button>` : ""}
       <a class="pf-bt" href="termos/">Termos de uso e privacidade</a>
       <button class="pf-bt sai" onclick="window.palSignOut&&window.palSignOut()">Sair da conta</button>
@@ -1481,8 +1646,23 @@ async function render(keepFocus, quiet) {
   $("#app").querySelectorAll(".bl-i").forEach(i => i.onchange = () => salvarPalpite(i.dataset.id, i));
 }
 window.addEventListener("hashchange", () => { tab = "seq"; render(); window.scrollTo(0, 0); });
+// Quem ainda não foi aprovado vê os jogos do dia, sem os palpites.
+window.palPrevia = async (el) => {
+  if (!el) return;
+  try {
+    const dia = dayOf(0);
+    if (!dayCache[dia]) dayCache[dia] = {t: Date.now(), d: await loadDay(0)};
+    const ms = dayCache[dia].d.flatMap(g => g.ms).sort((a, b) => a.time.localeCompare(b.time)).slice(0, 12);
+    if (!ms.length) { el.innerHTML = `<p class="prev-t">Hoje não tem jogo dos campeonatos principais.</p>`; return; }
+    el.innerHTML = `<div class="prev">${ms.map(m => `<div class="pv"><i>${m.status === "finished" ? "Fim" : m.status === "live" ? "AO VIVO" : hhmm(m.time)}</i>
+      <span>${esc(short(m.home))} x ${esc(short(m.away))}</span></div>`).join("")}</div>
+      <p class="prev-t">${ms.length} jogo${ms.length > 1 ? "s" : ""} hoje. Os palpites e os bilhetes aparecem assim que seu acesso for liberado.</p>`;
+  } catch (e) { el.innerHTML = ""; }
+};
 window.palRender = () => { const h = location.hash.slice(1);
-  if ((!h && homeTab === "palpites") || h.startsWith("jogo-")) render(false, true); };
+  if (h && !h.startsWith("jogo-")) return;
+  const digitando = document.activeElement && document.activeElement.id === "q";
+  render(digitando, true); };
 document.addEventListener("visibilitychange", () => { if (!document.hidden && location.hash.slice(1) === "times" && !document.body.classList.contains("locked")) render(false, true); });
 /* ---------- sem zoom no celular ---------- */
 ["gesturestart", "gesturechange", "gestureend"].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), {passive: false}));
@@ -1574,6 +1754,6 @@ function gateFail() {
 }
 window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=6" onerror="gateFail()"></script>
+<script type="module" src="gate.js?v=7" onerror="gateFail()"></script>
 </body>
 </html>

@@ -37,7 +37,7 @@ async function start() {
     const e = String((u && u.email) || "").toLowerCase();
     return !!e && (admins.includes(e) || adminsExtra.includes(e));
   };
-  let unsub = null, unsubTickets = null, unsubOut = null, unsubCasas = null, unsubAdm = null, beat = null;
+  let unsub = null, unsubTickets = null, unsubOut = null, unsubCasas = null, unsubAdm = null, unsubBan = null, beat = null;
   let adminsExtra = [];
 
   const ua = navigator.userAgent;
@@ -177,8 +177,11 @@ async function start() {
       <input id="g-wpp" type="tel" inputmode="tel" placeholder="WhatsApp com DDD" autocomplete="tel" maxlength="20">
       <div class="g-err" hidden></div>
       <button class="g-main" id="g-savewpp">Salvar WhatsApp</button>`}
+      <div id="g-previa"></div>
       ${installLink() ? `<p class="g-sub">Enquanto espera, já deixe o app instalado:</p>${installLink()}` : ""}
       <button class="g-ghost" id="g-out">Sair</button>`);
+    // mostra os jogos do dia enquanto o acesso não sai
+    if (window.palPrevia) window.palPrevia(gate.querySelector("#g-previa"));
     wireCommon();
     gate.querySelector("#g-out").onclick = () => A.signOut(auth);
     const sv = gate.querySelector("#g-savewpp");
@@ -242,6 +245,8 @@ async function start() {
     if (unsubTickets) { unsubTickets(); unsubTickets = null; }
     if (unsubOut) { unsubOut(); unsubOut = null; }
     if (unsubCasas) { unsubCasas(); unsubCasas = null; }
+    if (unsubBan) { unsubBan(); unsubBan = null; }
+    window.palBanner = null;
     if (beat) { clearInterval(beat); beat = null; }
     window.palCasas = null; window.palCalibra = null;
     window.palSave = null; window.palBolao = null; window.palOut = null; window.palStreak = 0;
@@ -334,6 +339,13 @@ async function start() {
     watchTickets();
     watchOut();
     watchCasas();
+    // recado que o admin escreve no painel
+    if (unsubBan) unsubBan();
+    unsubBan = F.onSnapshot(F.doc(db, "config", "banner"), s => {
+      const d = s.data() || {};
+      window.palBanner = d.ativo && d.texto ? d : null;
+      window.palRender && window.palRender();
+    }, () => {});
     // Medição de acertos: grava os palpites antes do apito e o resultado depois.
     const calId = id => String(id).replace(/[^A-Za-z0-9_-]/g, "");
     window.palCalibra = {
