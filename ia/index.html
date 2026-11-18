@@ -388,6 +388,13 @@ const ICONE_LINK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const botoesCasas = m => casasAtivas().map((c, i) =>
   `<a class="odd-b" href="${esc(linkDaCasa(c, m))}" target="_blank" rel="noopener" data-casa="${esc(c.id || "")}" onclick="window.track&&window.track('bets')">${ICONE_LINK}${casasAtivas().length > 1 ? esc(nomeCurto(c)) : "Ver odd"}</a>`).join("");
 // Os bilhetes do dia são cadastrados no painel do administrador (aba Bilhetes).
+/* Com código de reserva, o botão abre o bilhete já montado na casa.
+   Sem código, abre a página de apostas da casa — nunca o cadastro de quem já tem conta. */
+function linkDoBilhete(b) {
+  const base = b.casaLink ? String(b.casaLink) : "";
+  if (b.codigo) return base ? base.split("{q}")[0] + encodeURIComponent(b.codigo) : CASA + encodeURIComponent(b.codigo);
+  return base ? base.replace("{q}", "") : CASA_SPORTS;
+}
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
   const list = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length);
@@ -395,8 +402,8 @@ function readyView() {
   return `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
-      `<a class="gen ready-btn" href="${b.codigo ? (b.casaLink ? String(b.casaLink).split("{q}")[0] + encodeURIComponent(b.codigo) : CASA + encodeURIComponent(b.codigo)) : (b.casaLink ? String(b.casaLink).replace("{q}", "") : AFILIADO)}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">Apostar</a></div>`).join("") +
-    `<p class="ready-note">O botão abre a Bingo em Casa com o bilhete já montado. As odds podem mudar até o jogo.<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
+      `<a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`).join("") +
+    `<p class="ready-note">${list.some(b => b.codigo) ? "O botão abre a casa de apostas com o bilhete já montado. As odds podem mudar até o jogo." : "Monte as seleções na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
 }
 
 /* ---------- medir se a confiança é verdade ----------
