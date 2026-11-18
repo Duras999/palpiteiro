@@ -75,6 +75,15 @@
   .off{opacity:.5}
   .adm{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 13px;margin-bottom:8px}
   .adm span{flex:1;min-width:0;word-break:break-all;font-size:14px}
+  .graf{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px}
+  .graf h4{font-size:15px;font-weight:800;margin-bottom:2px}
+  .graf p{color:var(--mut);font-size:12.5px;margin-bottom:10px}
+  .graf svg{width:100%;height:150px;display:block}
+  .graf .eixo{fill:var(--mut);font-size:10px}
+  .adi{background:rgba(255,154,61,.12);border:1px solid rgba(255,154,61,.35);border-radius:14px;padding:11px 13px;
+       margin-bottom:10px;color:#e8c49a;font-size:13px;line-height:1.45}
+  .adi b{color:#ff9a3d}
+  .agd{background:rgba(124,134,255,.13);color:#9aa3ff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px}
   .cods{background:rgba(255,211,77,.07);border:1px solid rgba(255,211,77,.3);border-radius:16px;padding:14px;margin-bottom:12px}
   .cods h4{font-size:15px;font-weight:800;margin-bottom:4px;color:var(--yel)}
   .cods p{color:#e9d9a0;font-size:12.5px;line-height:1.5;margin-bottom:11px}
@@ -163,7 +172,7 @@ const APP_URL = new URL("../", location.href).href;
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const TZ = "America/Sao_Paulo";
-const ms = t => t && t.toMillis ? t.toMillis() : 0;
+const ms = t => !t ? 0 : t.toMillis ? t.toMillis() : t instanceof Date ? t.getTime() : typeof t === "number" ? t : (Date.parse(t) || 0);
 const fmt = t => { const m = ms(t); if (!m) return "-"; const d = new Date(m);
   return d.toLocaleDateString("pt-BR", {timeZone: TZ, day: "2-digit", month: "2-digit"}) + " " + d.toLocaleTimeString("pt-BR", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}); };
 const ago = t => { const m = ms(t); if (!m) return "nunca"; const s = (Date.now() - m) / 1000;
@@ -243,6 +252,7 @@ function view() {
   else if (tab === "dq") body = desfalquesView();
   else if (tab === "cal") body = acertosView();
   else if (tab === "casas") body = casasView();
+  else if (tab === "banner") body = bannerView();
   else if (tab === "adm") body = adminsView();
   else {
     let list = tab === "pend" ? pend : users;
@@ -253,7 +263,7 @@ function view() {
     } else list = [...list].sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
     body = (tab === "users" ? `<div class="bar"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp" value="${esc(q)}">
         <select id="f"><option value="all">Todos</option><option value="approved">Aprovados</option><option value="pending">Pendentes</option><option value="blocked">Bloqueados</option></select>
-        <button class="btn s" id="csv">Baixar contatos</button></div>`
+        <button class="btn s" id="csv">Baixar contatos</button></div>` + grafico()
       : pend.length > 1 ? `<div class="tools"><button class="btn g" id="all">Aprovar todos (${pend.length})</button></div>` : "") +
       `<div class="list">${list.length ? list.map(row).join("") : `<div class="empty">${tab === "pend" ? "Nenhum pedido aguardando." : "Nenhum usuário encontrado."}</div>`}</div>`;
   }
@@ -276,6 +286,7 @@ function view() {
       <button class="${tab === "dq" ? "on" : ""}" data-tab="dq">Desfalques</button>
       <button class="${tab === "cal" ? "on" : ""}" data-tab="cal">Acertos</button>
       <button class="${tab === "casas" ? "on" : ""}" data-tab="casas">Casas</button>
+      <button class="${tab === "banner" ? "on" : ""}" data-tab="banner">Recado</button>
       ${souDono ? `<button class="${tab === "adm" ? "on" : ""}" data-tab="adm">Admins</button>` : ""}</div>
     ${body}
   </div>`;
@@ -293,6 +304,7 @@ function view() {
   if (tab === "dq") wireDesfalques();
   if (tab === "cal") wireAcertos();
   if (tab === "casas") wireCasas();
+  if (tab === "banner") wireBanner();
   if (tab === "adm") wireAdmins();
 }
 
@@ -373,9 +385,87 @@ async function detail(id) {
   } catch (e) { const el = document.getElementById("days"); if (el) el.textContent = "Não deu para carregar o uso por dia."; }
 }
 
+/* ---------- Crescimento de usuários ---------- */
+function grafico() {
+  const pts = users.map(u => ms(u.createdAt)).filter(Boolean).sort((a, b) => a - b);
+  if (pts.length < 2) return "";
+  const dia = t => new Date(t).toLocaleDateString("en-CA", {timeZone: TZ});
+  const por = new Map();
+  pts.forEach(t => por.set(dia(t), (por.get(dia(t)) || 0) + 1));
+  const dias = [...por.keys()].sort();
+  const ini = new Date(dias[0] + "T12:00:00Z"), fim = new Date(dayStr() + "T12:00:00Z");
+  const serie = []; let total = 0;
+  for (let d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) {
+    const k = d.toISOString().slice(0, 10);
+    total += por.get(k) || 0;
+    serie.push({d: k, n: total});
+  }
+  if (serie.length < 2) return "";
+  const W = 600, H = 150, pad = 26, max = Math.max(...serie.map(x => x.n), 1);
+  const px = i => pad + i * (W - pad - 8) / (serie.length - 1);
+  const py = n => H - 20 - (n / max) * (H - 36);
+  const linha = serie.map((x, i) => (i ? "L" : "M") + px(i).toFixed(1) + " " + py(x.n).toFixed(1)).join(" ");
+  const area = linha + ` L${px(serie.length - 1).toFixed(1)} ${H - 20} L${px(0).toFixed(1)} ${H - 20} Z`;
+  const rot = i => serie[i].d.split("-").reverse().slice(0, 2).join("/");
+  const ult7 = serie.length > 7 ? serie[serie.length - 1].n - serie[serie.length - 8].n : serie[serie.length - 1].n;
+  return `<div class="graf"><h4>Crescimento</h4><p>${serie[serie.length - 1].n} cadastrados no total · ${ult7 >= 0 ? "+" + ult7 : ult7} nos últimos 7 dias</p>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#19e07a" stop-opacity=".35"/><stop offset="1" stop-color="#19e07a" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#g1)"/>
+      <path d="${linha}" fill="none" stroke="#19e07a" stroke-width="2.5" stroke-linejoin="round"/>
+      <text class="eixo" x="2" y="${py(max) + 4}">${max}</text>
+      <text class="eixo" x="${pad}" y="${H - 5}">${rot(0)}</text>
+      <text class="eixo" x="${W - 40}" y="${H - 5}">${rot(serie.length - 1)}</text>
+    </svg></div>`;
+}
+
+/* ---------- Jogo adiado: confere os bilhetes contra a fonte de dados ---------- */
+let adiados = null;
+async function conferirAdiados() {
+  const doDia = tickets.filter(t => t.date === tkDay && (t.sel || []).some(x => x.id));
+  if (!doDia.length) { adiados = []; return; }
+  try {
+    const ids = new Map();
+    for (const d of [tkDay, new Date(new Date(tkDay + "T12:00:00Z").getTime() + 86400000).toISOString().slice(0, 10)]) {
+      const r = await fetch(`https://sportscore.com/api/v1/fixtures/?sport=football&date=${d}&limit=200`).then(x => x.json()).catch(() => null);
+      for (const m of (r && r.matches) || []) {
+        const id = (m.url || "").split("/").filter(Boolean).pop();
+        if (id) ids.set(id, m.status);
+      }
+    }
+    if (!ids.size) { adiados = []; return; }
+    adiados = doDia.map(t => {
+      const ruins = (t.sel || []).filter(x => x.id && (!ids.has(x.id) || !["upcoming", "live", "finished"].includes(ids.get(x.id))));
+      return ruins.length ? {t, ruins} : null;
+    }).filter(Boolean);
+  } catch (e) { adiados = []; }
+  if (modal.hidden && tab === "tk") view();
+}
+function avisoAdiados() {
+  if (!adiados || !adiados.length) return "";
+  return adiados.map(({t, ruins}) => `<div class="adi">⚠️ O bilhete <b>${esc(t.tipo || "")}</b> tem ${ruins.length} jogo${ruins.length > 1 ? "s" : ""} que
+    <b>saiu da tabela</b> (adiado ou cancelado): ${ruins.map(x => esc(x.jogo)).join(", ")}. Vale conferir antes de deixar no ar.</div>`).join("");
+}
+
 /* ---------- Colar os códigos de reserva de uma vez ---------- */
 function textoDoBilhete(t) {
   return (t.sel || []).map(x => `${x.jogo}${x.hora ? " " + x.hora : ""} - ${x.mercado}`).join("\n");
+}
+// Mensagem pronta para colar nos grupos de WhatsApp.
+function textoWhats(t) {
+  const r = riscoNome(t.tipo, t.odd);
+  const L = [];
+  L.push(`🎯 *BILHETE DO PALPITEIRO* — ${brDay(t.date)}`);
+  L.push(`${r ? "Nível: *" + r.lbl + "*" : ""}${t.odd ? (r ? " · " : "Odd ") + "Odd *" + t.odd + "*" : ""}`.trim());
+  L.push("");
+  (t.sel || []).forEach(x => { L.push(`⚽ ${x.jogo}${x.hora ? " · " + x.hora : ""}`); L.push(`   ➡️ *${x.mercado}*`); });
+  L.push("");
+  if (t.codigo) L.push(`📲 Código de reserva: *${t.codigo}*`);
+  L.push(`👉 Abra no app: ${APP_URL}`);
+  L.push("");
+  L.push("+18 · Aposte com responsabilidade. Palpite não é garantia de resultado.");
+  return L.filter((x, i, a) => !(x === "" && a[i - 1] === "")).join("\n");
 }
 function codigosView() {
   const semCod = tickets.filter(t => t.date === tkDay && !t.codigo);
@@ -561,6 +651,39 @@ function casaForm(c) {
   };
 }
 
+/* ---------- Recado seu dentro do app ---------- */
+let banner = null, bannerLido = false;
+function bannerView() {
+  const b = banner || {};
+  return `<div class="form" style="max-width:560px">
+      <p class="hint">O recado aparece no topo da tela de Partidas, para todo mundo. Serve para avisar de live, promoção da casa ou qualquer coisa que você queira que vejam.</p>
+      <label>Situação<select id="b-ativo"><option value="0" ${b.ativo ? "" : "selected"}>Desligado</option><option value="1" ${b.ativo ? "selected" : ""}>Ligado</option></select></label>
+      <label>Texto<input id="b-texto" value="${esc(b.texto || "")}" maxlength="120" placeholder="Ex.: Live hoje às 20h no TikTok do Zé Tabela"></label>
+      <label>Link (opcional)<input id="b-link" value="${esc(b.link || "")}" maxlength="300" placeholder="https://..."></label>
+      <label>Texto do botão (opcional)<input id="b-bt" value="${esc(b.bt || "")}" maxlength="18" placeholder="Ex.: Assistir"></label>
+      <div class="err" id="b-err" hidden></div>
+      <button class="btn g" id="b-save" style="padding:13px">Salvar recado</button></div>`;
+}
+function wireBanner() {
+  if (!bannerLido) { bannerLido = true;
+    F.getDoc(F.doc(db, "config", "banner")).then(s => { banner = s.exists() ? s.data() : {}; if (modal.hidden && tab === "banner") view(); }).catch(() => {}); }
+  const sv = document.getElementById("b-save");
+  if (sv) sv.onclick = async () => {
+    const er = m => { const e = document.getElementById("b-err"); e.textContent = m; e.hidden = false; };
+    const texto = document.getElementById("b-texto").value.trim();
+    const link = document.getElementById("b-link").value.trim();
+    const ativo = document.getElementById("b-ativo").value === "1";
+    if (ativo && texto.length < 3) return er("Escreva o texto do recado.");
+    if (link && !/^https?:\/\//i.test(link)) return er("O link precisa começar com https://");
+    sv.disabled = true;
+    try {
+      banner = {ativo, texto, link, bt: document.getElementById("b-bt").value.trim(), updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
+      await F.setDoc(F.doc(db, "config", "banner"), banner);
+      sv.textContent = "Salvo!"; setTimeout(() => { sv.textContent = "Salvar recado"; sv.disabled = false; }, 1500);
+    } catch (e) { sv.disabled = false; er("Não deu para salvar."); }
+  };
+}
+
 /* ---------- Administradores (só o dono mexe) ---------- */
 function adminsView() {
   return `<p class="hint" style="margin-bottom:10px">Quem estiver nessa lista entra no painel e monta bilhetes pelo app. O seu e-mail é o dono e não sai daqui — é o que garante que ninguém te tire do próprio painel.</p>
@@ -675,21 +798,29 @@ function ticketsView() {
       <button class="btn s" id="tk-today">Hoje</button><button class="btn s" id="tk-tom">Amanhã</button>
       <button class="btn g" id="tk-new" style="margin-left:auto">+ Novo bilhete</button></div>
     <p class="hint" style="margin-bottom:10px">Os bilhetes de <b>${esc(brDay(tkDay))}</b> aparecem no app na aba Palpites só nesse dia. O botão Apostar abre a Bingo em Casa com o código de reserva.</p>
+    ${avisoAdiados()}
     ${codigosView()}
     ${conversaoView()}
     <div class="list">${list.length ? list.map(t => `<div class="tk">
-      <div class="tk-h">${(() => { const r = riscoNome(t.tipo, t.odd); return r ? rskTag(r) : `<b>${esc(t.tipo || "Bilhete")}</b>`; })()}<span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
+      <div class="tk-h">${(() => { const r = riscoNome(t.tipo, t.odd); return r ? rskTag(r) : `<b>${esc(t.tipo || "Bilhete")}</b>`; })()}${t.publicarAs && ms(t.publicarAs) > Date.now() ? `<span class="agd">sai às ${fmt(t.publicarAs).split(" ")[1]}</span>` : ""}<span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
       ${(t.sel || []).map(x => `<div class="tk-s"><small>${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</small>${esc(x.mercado)}</div>`).join("")}
       <div class="tk-c">Código de reserva: <b>${t.codigo ? esc(t.codigo) : "nenhum"}</b>${t.codigo ? "" : `<span class="sem">só abre a casa</span>`}</div>
       <div class="cl">Cliques em Apostar: <b>${+t.clicks || 0}</b></div>
-      <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-tke="${esc(t.id)}">Editar</button><button class="btn s" data-tkc="${esc(t.id)}">Copiar para outro dia</button><button class="btn r" data-tkx="${esc(t.id)}">Excluir</button></div>
+      <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn g" data-wz="${esc(t.id)}">Copiar p/ WhatsApp</button><button class="btn s" data-tke="${esc(t.id)}">Editar</button><button class="btn s" data-tkc="${esc(t.id)}">Copiar para outro dia</button><button class="btn r" data-tkx="${esc(t.id)}">Excluir</button></div>
     </div>`).join("") : `<div class="empty">Nenhum bilhete cadastrado para esse dia.</div>`}</div>`;
 }
 function wireTickets() {
+  root.querySelectorAll("[data-wz]").forEach(b => b.onclick = async () => {
+    const t = tickets.find(x => x.id === b.dataset.wz); if (!t) return;
+    const txt = textoWhats(t);
+    try { await navigator.clipboard.writeText(txt); b.textContent = "Copiado!"; setTimeout(() => b.textContent = "Copiar p/ WhatsApp", 1800); }
+    catch (e) { prompt("Copie a mensagem:", txt); }
+  });
+  if (adiados === null) conferirAdiados();
   const d = document.getElementById("tkd"); if (!d) return;
-  d.onchange = () => { if (d.value) { tkDay = d.value; view(); } };
-  document.getElementById("tk-today").onclick = () => { tkDay = dayStr(); view(); };
-  document.getElementById("tk-tom").onclick = () => { tkDay = dayStr(1); view(); };
+  d.onchange = () => { if (d.value) { tkDay = d.value; adiados = null; view(); } };
+  document.getElementById("tk-today").onclick = () => { tkDay = dayStr(); adiados = null; view(); };
+  document.getElementById("tk-tom").onclick = () => { tkDay = dayStr(1); adiados = null; view(); };
   document.getElementById("tk-new").onclick = () => ticketForm(null);
   root.querySelectorAll("[data-tke]").forEach(b => b.onclick = () => ticketForm(tickets.find(t => t.id === b.dataset.tke)));
   root.querySelectorAll("[data-tkc]").forEach(b => b.onclick = () => { const t = tickets.find(x => x.id === b.dataset.tkc); if (t) ticketForm({...t, id: null, date: dayStr(1)}); });
@@ -714,6 +845,8 @@ function ticketForm(t) {
         <label>Nível de risco<select id="t-tipo">${TIPOS.map(x => `<option ${nome === x ? "selected" : ""}>${x}</option>`).join("")}<option value="_" ${custom ? "selected" : ""}>Outro nome…</option></select></label></div>
       <label id="t-outro-l" ${custom ? "" : "hidden"}>Nome do bilhete<input id="t-outro" value="${esc(custom ? t.tipo : "")}" maxlength="24"></label>
       <div class="sug" id="t-sug" hidden></div>
+      <label>Publicar<select id="t-quando"><option value="">Na hora</option><option value="agendar" ${t.publicarAs ? "selected" : ""}>Em um horário</option></select></label>
+      <label id="t-hora-l" ${t.publicarAs ? "" : "hidden"}>Sai às<input id="t-hora" type="time" value="${t.publicarAs ? new Date(ms(t.publicarAs)).toLocaleTimeString("pt-BR", {timeZone: TZ, hour: "2-digit", minute: "2-digit"}) : "09:00"}"></label>
       <label>Casa do código<select id="t-casa"><option value="">Bingo em Casa (padrão)</option>${casas.filter(c => c.link).map(c => `<option value="${esc(c.id)}" ${t.casa === c.id ? "selected" : ""}>${esc(c.nome || c.id)}</option>`).join("")}</select></label>
       <div class="g2"><label>Odd total<input id="t-odd" inputmode="decimal" placeholder="3.22" value="${esc(t.odd || "")}" maxlength="8"></label>
         <label>Código de reserva<input id="t-cod" placeholder="17059B1" value="${esc(t.codigo || "")}" maxlength="24" autocapitalize="characters"></label></div>
@@ -743,6 +876,8 @@ function ticketForm(t) {
     const u = document.getElementById("t-usar");
     if (u) u.onclick = () => { tipoSel.value = r.lbl; document.getElementById("t-outro-l").hidden = true; verSug(); };
   };
+  const quando = document.getElementById("t-quando");
+  quando.onchange = () => { document.getElementById("t-hora-l").hidden = quando.value !== "agendar"; };
   oddIn.oninput = verSug;
   tipoSel.onchange = () => { tocouTipo = true; document.getElementById("t-outro-l").hidden = tipoSel.value !== "_"; verSug(); };
   verSug();
@@ -765,7 +900,13 @@ function ticketForm(t) {
     save.disabled = true;
     const casaId = document.getElementById("t-casa").value;
     const casaObj = casas.find(c => c.id === casaId);
-    const data = {date, tipo, odd, codigo, sel, casa: casaId, casaLink: casaObj ? casaObj.link : "",
+    let publicarAs = null;
+    if (document.getElementById("t-quando").value === "agendar") {
+      const hm = document.getElementById("t-hora").value || "09:00";
+      publicarAs = new Date(`${date}T${hm}:00-03:00`);
+      if (isNaN(publicarAs.getTime())) publicarAs = null;
+    }
+    const data = {date, tipo, odd, codigo, sel, publicarAs, casa: casaId, casaLink: casaObj ? casaObj.link : "",
       order: TIPOS.includes(tipo) ? TIPOS.indexOf(tipo) : 9, updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
     try {
       if (isNew) await F.addDoc(F.collection(db, "tickets"), {...data, createdAt: F.serverTimestamp()});
