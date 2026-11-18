@@ -75,6 +75,18 @@
   .off{opacity:.5}
   .adm{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:11px 13px;margin-bottom:8px}
   .adm span{flex:1;min-width:0;word-break:break-all;font-size:14px}
+  .cods{background:rgba(255,211,77,.07);border:1px solid rgba(255,211,77,.3);border-radius:16px;padding:14px;margin-bottom:12px}
+  .cods h4{font-size:15px;font-weight:800;margin-bottom:4px;color:var(--yel)}
+  .cods p{color:#e9d9a0;font-size:12.5px;line-height:1.5;margin-bottom:11px}
+  .cods ol{margin:0 0 11px 18px;color:#e9d9a0;font-size:12.5px;line-height:1.7}
+  .cl-row{display:grid;grid-template-columns:1fr 150px auto;gap:8px;align-items:center;margin-bottom:8px}
+  .cl-row .nm{min-width:0;font-size:13.5px}
+  .cl-row .nm b{display:block;font-size:14px}
+  .cl-row .nm small{color:var(--mut);display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cl-row input{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--txt);outline:0;width:100%;font:inherit;font-size:15px;text-transform:uppercase}
+  .cl-row input:focus{border-color:var(--yel)}
+  .sem{background:rgba(255,154,61,.14);color:#ff9a3d;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px}
+  @media(max-width:560px){.cl-row{grid-template-columns:1fr;gap:5px}.cl-row .btn{width:100%}}
   .cl{color:var(--mut);font-size:12.5px;margin-top:8px}
   .cl b{color:var(--green);font-weight:800;font-size:14px}
   .conv{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
@@ -277,7 +289,7 @@ function view() {
   root.querySelectorAll("[data-act]").forEach(b => b.onclick = e => { e.stopPropagation(); act2(b.dataset.act, b.dataset.id); });
   root.querySelectorAll("[data-stop]").forEach(b => b.onclick = e => e.stopPropagation());
   root.querySelectorAll("[data-open]").forEach(b => b.onclick = () => detail(b.dataset.open));
-  if (tab === "tk") wireTickets();
+  if (tab === "tk") { wireTickets(); wireCodigos(); }
   if (tab === "dq") wireDesfalques();
   if (tab === "cal") wireAcertos();
   if (tab === "casas") wireCasas();
@@ -359,6 +371,44 @@ async function detail(id) {
       rows.map(r => `<tr><td>${esc(String(r.date).split("-").reverse().slice(0, 2).join("/"))}</td><td>${r.opens || 0}</td><td>${r.games || 0}</td><td>${r.tickets || 0}</td><td>${r.bets || 0}</td></tr>`).join("")}</tbody></table>`
       : `<div class="muted">Ainda sem uso registrado.</div>`;
   } catch (e) { const el = document.getElementById("days"); if (el) el.textContent = "Não deu para carregar o uso por dia."; }
+}
+
+/* ---------- Colar os códigos de reserva de uma vez ---------- */
+function textoDoBilhete(t) {
+  return (t.sel || []).map(x => `${x.jogo}${x.hora ? " " + x.hora : ""} - ${x.mercado}`).join("\n");
+}
+function codigosView() {
+  const semCod = tickets.filter(t => t.date === tkDay && !t.codigo);
+  if (!semCod.length) return "";
+  return `<div class="cods"><h4>${semCod.length} bilhete${semCod.length > 1 ? "s" : ""} sem código de reserva</h4>
+    <p>Sem o código, o botão no app só abre a página da casa — não abre o bilhete montado. Para resolver:</p>
+    <ol><li>Toque em <b>Copiar jogos</b> no bilhete abaixo.</li>
+      <li>Abra a casa de apostas e monte essas seleções.</li>
+      <li>Use a opção de <b>reservar / compartilhar</b> do bilhete lá e copie o código.</li>
+      <li>Cole aqui e salve.</li></ol>
+    ${semCod.map(t => `<div class="cl-row"><div class="nm"><b>${esc(t.tipo || "Bilhete")}</b><small>${esc((t.sel || []).map(x => x.mercado).join(" · "))}</small></div>
+      <input data-cod="${esc(t.id)}" placeholder="Código" maxlength="24" autocapitalize="characters">
+      <button class="btn s" data-copy="${esc(t.id)}">Copiar jogos</button></div>`).join("")}
+    <button class="btn g" id="cod-save" style="width:100%;margin-top:4px">Salvar códigos</button>
+    <div class="err" id="cod-err" hidden></div></div>`;
+}
+function wireCodigos() {
+  root.querySelectorAll("[data-copy]").forEach(b => b.onclick = async () => {
+    const t = tickets.find(x => x.id === b.dataset.copy); if (!t) return;
+    try { await navigator.clipboard.writeText(textoDoBilhete(t)); b.textContent = "Copiado!"; setTimeout(() => b.textContent = "Copiar jogos", 1800); }
+    catch (e) { alert(textoDoBilhete(t)); }
+  });
+  const sv = document.getElementById("cod-save");
+  if (sv) sv.onclick = async () => {
+    const campos = [...root.querySelectorAll("[data-cod]")].filter(i => i.value.trim());
+    if (!campos.length) { const e = document.getElementById("cod-err"); e.textContent = "Cole pelo menos um código."; e.hidden = false; return; }
+    sv.disabled = true; sv.textContent = "Salvando…";
+    try {
+      for (const i of campos) await F.updateDoc(F.doc(db, "tickets", i.dataset.cod),
+        {codigo: i.value.trim().replace(/\s+/g, "").toUpperCase(), updatedAt: F.serverTimestamp()});
+    } catch (e) { const el = document.getElementById("cod-err"); el.textContent = "Não deu para salvar. Tente de novo."; el.hidden = false; }
+    sv.disabled = false; sv.textContent = "Salvar códigos";
+  };
 }
 
 /* ---------- Backup de tudo, para não depender só do Firebase ---------- */
@@ -625,11 +675,12 @@ function ticketsView() {
       <button class="btn s" id="tk-today">Hoje</button><button class="btn s" id="tk-tom">Amanhã</button>
       <button class="btn g" id="tk-new" style="margin-left:auto">+ Novo bilhete</button></div>
     <p class="hint" style="margin-bottom:10px">Os bilhetes de <b>${esc(brDay(tkDay))}</b> aparecem no app na aba Palpites só nesse dia. O botão Apostar abre a Bingo em Casa com o código de reserva.</p>
+    ${codigosView()}
     ${conversaoView()}
     <div class="list">${list.length ? list.map(t => `<div class="tk">
       <div class="tk-h">${(() => { const r = riscoNome(t.tipo, t.odd); return r ? rskTag(r) : `<b>${esc(t.tipo || "Bilhete")}</b>`; })()}<span>${t.odd ? "Odd " + esc(t.odd) : ""}</span></div>
       ${(t.sel || []).map(x => `<div class="tk-s"><small>${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</small>${esc(x.mercado)}</div>`).join("")}
-      <div class="tk-c">Código de reserva: <b>${esc(t.codigo || "sem código (abre o link de cadastro)")}</b></div>
+      <div class="tk-c">Código de reserva: <b>${t.codigo ? esc(t.codigo) : "nenhum"}</b>${t.codigo ? "" : `<span class="sem">só abre a casa</span>`}</div>
       <div class="cl">Cliques em Apostar: <b>${+t.clicks || 0}</b></div>
       <div class="acts" style="margin-top:10px;justify-content:flex-start"><button class="btn s" data-tke="${esc(t.id)}">Editar</button><button class="btn s" data-tkc="${esc(t.id)}">Copiar para outro dia</button><button class="btn r" data-tkx="${esc(t.id)}">Excluir</button></div>
     </div>`).join("") : `<div class="empty">Nenhum bilhete cadastrado para esse dia.</div>`}</div>`;
