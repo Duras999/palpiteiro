@@ -263,7 +263,7 @@ function view() {
     } else list = [...list].sort((a, b) => ms(a.createdAt) - ms(b.createdAt));
     body = (tab === "users" ? `<div class="bar"><input id="q" placeholder="Buscar nome, e-mail ou WhatsApp" value="${esc(q)}">
         <select id="f"><option value="all">Todos</option><option value="approved">Aprovados</option><option value="pending">Pendentes</option><option value="blocked">Bloqueados</option></select>
-        <button class="btn s" id="csv">Baixar contatos</button></div>` + grafico()
+        <button class="btn s" id="csv">Baixar contatos</button></div>` + cotaView() + grafico()
       : pend.length > 1 ? `<div class="tools"><button class="btn g" id="all">Aprovar todos (${pend.length})</button></div>` : "") +
       `<div class="list">${list.length ? list.map(row).join("") : `<div class="empty">${tab === "pend" ? "Nenhum pedido aguardando." : "Nenhum usuário encontrado."}</div>`}</div>`;
   }
@@ -383,6 +383,36 @@ async function detail(id) {
       rows.map(r => `<tr><td>${esc(String(r.date).split("-").reverse().slice(0, 2).join("/"))}</td><td>${r.opens || 0}</td><td>${r.games || 0}</td><td>${r.tickets || 0}</td><td>${r.bets || 0}</td></tr>`).join("")}</tbody></table>`
       : `<div class="muted">Ainda sem uso registrado.</div>`;
   } catch (e) { const el = document.getElementById("days"); if (el) el.textContent = "Não deu para carregar o uso por dia."; }
+}
+
+/* ---------- Cota do plano grátis ----------
+   O app conta quantos documentos lê em cada celular e manda essa conta junto
+   do sinal de presença. Aqui a gente soma tudo e compara com o teto do dia. */
+const COTA_LEITURAS = 50000, COTA_GRAVACOES = 20000;
+function cotaView() {
+  const hoje = dayStr();
+  const deHoje = users.filter(u => u.leituras && u.leituras.dia === hoje);
+  const lidos = deHoje.reduce((a, u) => a + (+u.leituras.n || 0), 0);
+  const ativos = users.filter(u => ms(u.lastSeen) > Date.now() - 86400000).length;
+  if (!deHoje.length) return `<div class="graf cota"><h4>Cota do plano grátis</h4>
+    <p>Ainda não chegou nenhuma medição de hoje. Ela aparece depois que alguém abrir o app.</p></div>`;
+  // quem abriu hoje mas ainda não mandou a medição entra pela média dos que mandaram
+  const media = lidos / deHoje.length;
+  const prev = Math.round(lidos + media * Math.max(0, ativos - deHoje.length));
+  const pct = Math.min(100, Math.round(prev / COTA_LEITURAS * 100));
+  const cor = pct >= 80 ? "#ff5a5a" : pct >= 55 ? "#ffd34d" : "#19e07a";
+  const sobra = Math.max(0, Math.floor((COTA_LEITURAS - prev) / Math.max(1, media)));
+  return `<div class="graf cota"><h4>Cota do plano grátis</h4>
+    <p>Hoje: <b style="color:${cor}">${prev.toLocaleString("pt-BR")}</b> de ${COTA_LEITURAS.toLocaleString("pt-BR")} leituras (${pct}%) ·
+       ${deHoje.length} ${deHoje.length === 1 ? "medição" : "medições"} · média de ${Math.round(media)} por pessoa</p>
+    <div style="height:12px;border-radius:99px;background:#1d242c;overflow:hidden;margin:10px 0 6px">
+      <div style="height:100%;width:${pct}%;background:${cor};border-radius:99px"></div></div>
+    <p>${pct >= 80
+      ? "Perto do teto. Se estourar, o app para de carregar até a virada do dia (meia-noite no horário do Pacífico). Hora de pensar no plano pago ou em cortar leitura."
+      : pct >= 55
+        ? "Dá para o movimento de hoje, mas não sobra muito. Vale acompanhar."
+        : `Folgado. No ritmo de hoje ainda cabem umas ${sobra.toLocaleString("pt-BR")} pessoas.`}</p>
+    <p class="hint" style="margin-top:8px">Isso é uma estimativa feita pelo próprio app. O número oficial fica no Firebase, em Uso e faturamento.</p></div>`;
 }
 
 /* ---------- Crescimento de usuários ---------- */
@@ -662,7 +692,15 @@ function bannerView() {
       <label>Link (opcional)<input id="b-link" value="${esc(b.link || "")}" maxlength="300" placeholder="https://..."></label>
       <label>Texto do botão (opcional)<input id="b-bt" value="${esc(b.bt || "")}" maxlength="18" placeholder="Ex.: Assistir"></label>
       <div class="err" id="b-err" hidden></div>
-      <button class="btn g" id="b-save" style="padding:13px">Salvar recado</button></div>`;
+      <button class="btn g" id="b-save" style="padding:13px">Salvar recado</button>
+
+      <h4 style="margin:26px 0 0">Modo manutenção</h4>
+      <p class="hint">Com isso ligado, quem abrir o app vê um aviso de "já voltamos" no lugar das telas. Você continua enxergando tudo normal, porque é administrador. Use quando algo quebrar ou quando estiver mexendo em algo importante.</p>
+      <label>Situação<select id="b-manut"><option value="0" ${b.manutencao ? "" : "selected"}>App no ar</option><option value="1" ${b.manutencao ? "selected" : ""}>Em manutenção</option></select></label>
+      <label>Recado da manutenção<input id="b-mtexto" value="${esc(b.manutTexto || "")}" maxlength="140" placeholder="O Palpiteiro está em manutenção rápida. Daqui a pouco tá no ar de novo."></label>
+      <div class="err" id="m-err" hidden></div>
+      <button class="btn ${b.manutencao ? "g" : ""}" id="m-save" style="padding:13px">${b.manutencao ? "Salvar e voltar com o app" : "Salvar manutenção"}</button>
+      ${b.manutencao ? `<p class="hint" style="color:var(--yel)">O app está fora do ar para os usuários agora.</p>` : ""}</div>`;
 }
 function wireBanner() {
   if (!bannerLido) { bannerLido = true;
@@ -677,10 +715,25 @@ function wireBanner() {
     if (link && !/^https?:\/\//i.test(link)) return er("O link precisa começar com https://");
     sv.disabled = true;
     try {
-      banner = {ativo, texto, link, bt: document.getElementById("b-bt").value.trim(), updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
+      banner = {...banner, ativo, texto, link, bt: document.getElementById("b-bt").value.trim(), updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
       await F.setDoc(F.doc(db, "config", "banner"), banner);
       sv.textContent = "Salvo!"; setTimeout(() => { sv.textContent = "Salvar recado"; sv.disabled = false; }, 1500);
     } catch (e) { sv.disabled = false; er("Não deu para salvar."); }
+  };
+  const ms_ = document.getElementById("m-save");
+  if (ms_) ms_.onclick = async () => {
+    const manutencao = document.getElementById("b-manut").value === "1";
+    const manutTexto = document.getElementById("b-mtexto").value.trim();
+    if (manutencao && !confirm("Tirar o app do ar para todos os usuários agora?")) return;
+    ms_.disabled = true;
+    try {
+      banner = {...banner, manutencao, manutTexto, updatedAt: F.serverTimestamp(), by: auth.currentUser.email};
+      await F.setDoc(F.doc(db, "config", "banner"), banner);
+      view();
+    } catch (e) {
+      ms_.disabled = false;
+      const e2 = document.getElementById("m-err"); if (e2) { e2.textContent = "Não deu para salvar."; e2.hidden = false; }
+    }
   };
 }
 
