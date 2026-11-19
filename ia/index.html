@@ -2431,6 +2431,8 @@ async function bolaoView() {
    Em cima: o QR do app na esquerda, o logo no centro e a direita vazia
    de propósito, para o Jorge colocar o que quiser depois. Embaixo, as
    seleções e o aviso de que é análise, não promessa. */
+// Link de cadastro na casa, o que aparece no QR da direita das imagens.
+const LINK_CASA = "http://b.ingoem.casa/t/NTk2OTI2XzM=/";
 let logoPronto = null;
 function carregarLogo() {
   if (logoPronto) return logoPronto;
@@ -2442,7 +2444,7 @@ function carregarLogo() {
   });
   return logoPronto;
 }
-function imagemDoMeuBilhete(lista, logo) {
+function imagemDoMeuBilhete(lista, logo, resumo) {
   const W = 1080, H = 1350, P = 72;
   const c = document.createElement("canvas");
   c.width = W; c.height = H;
@@ -2455,12 +2457,19 @@ function imagemDoMeuBilhete(lista, logo) {
   br.addColorStop(0, "rgba(25,224,122,.16)"); br.addColorStop(1, "rgba(25,224,122,0)");
   x.fillStyle = br; x.fillRect(0, 0, W, H);
 
-  // esquerda: QR do app
-  const qs = 180;
+  // os dois QR de cima, cada um com o seu recado
+  const qs = 172;
+  const legenda = (texto, cx, cy) => {
+    x.fillStyle = "#8a96a3"; x.font = "700 25px " + FT; x.textAlign = "center";
+    x.fillText(texto, cx, cy);
+  };
   desenhaQr(x, "https://opalpiteiro.online/", P, P, qs);
+  legenda("Use o app", P + qs / 2, P + qs + 36);
+  desenhaQr(x, LINK_CASA, W - P - qs, P, qs);
+  legenda("Cadastre-se na casa", W - P - qs / 2, P + qs + 36);
 
   // centro: o logo do app
-  const ls = 104, lx = (W - ls) / 2, ly = P + 2;
+  const ls = 100, lx = (W - ls) / 2, ly = P + 4;
   if (logo) {
     x.save();
     x.beginPath();
@@ -2480,24 +2489,22 @@ function imagemDoMeuBilhete(lista, logo) {
     x.textBaseline = "alphabetic";
   }
   x.textAlign = "center";
-  x.font = "800 46px " + FT;
+  x.font = "800 44px " + FT;
   const t1 = "Palpi", t2 = "teiro";
   const w1 = x.measureText(t1).width, w2 = x.measureText(t2).width;
   const tx = (W - (w1 + w2)) / 2;
   x.textAlign = "left";
-  x.fillStyle = "#eef2f6"; x.fillText(t1, tx, ly + ls + 48);
-  x.fillStyle = "#19e07a"; x.fillText(t2, tx + w1, ly + ls + 48);
-
-  // a direita de cima fica vazia de propósito
+  x.fillStyle = "#eef2f6"; x.fillText(t1, tx, ly + ls + 46);
+  x.fillStyle = "#19e07a"; x.fillText(t2, tx + w1, ly + ls + 46);
 
   // as seleções
-  let y = P + qs + 90;
-  const fim = H - 210;
+  let y = P + qs + 96;
+  const fim = H - (resumo ? 300 : 210);
   const n = Math.min(lista.length, 8);
-  const teto = n === 1 ? 300 : n === 2 ? 230 : 170;
-  const alt = Math.min(teto, Math.max(92, (fim - y) / Math.max(n, 1)));
+  const teto = n === 1 ? 300 : n === 2 ? 240 : 190;
+  const alt = Math.min(teto, Math.max(124, (fim - y) / Math.max(n, 1)));
   y += Math.max(0, (fim - y - alt * n) / 2);
-  const fJogo = n <= 2 ? 34 : 29, fMerc = n === 1 ? 58 : n === 2 ? 46 : n <= 4 ? 40 : 34;
+  const fJogo = n <= 2 ? 34 : 29, fMerc = n === 1 ? 54 : n === 2 ? 46 : n <= 4 ? 40 : 34;
   const corta = (t, max, fonte) => { x.font = fonte; let v = String(t);
     while (x.measureText(v).width > max && v.length > 4) v = v.slice(0, -2);
     return v === String(t) ? v : v + "…"; };
@@ -2508,13 +2515,49 @@ function imagemDoMeuBilhete(lista, logo) {
     if (x.roundRect) x.roundRect(P, top, W - P * 2, alt - 14, 22); else x.rect(P, top, W - P * 2, alt - 14);
     x.fill();
     x.fillStyle = "#19e07a"; x.fillRect(P, top + 18, 6, Math.max(24, alt - 50));
-    const meio = top + (alt - 14) / 2;
+    const temRisco = sl.conf > 0;
+    const meio = top + (alt - 14) / 2 - (temRisco ? 22 : 0);
     const fj = "600 " + fJogo + "px " + FT, fm = "800 " + fMerc + "px " + FT;
     x.fillStyle = "#8a96a3"; x.font = fj;
     x.fillText(corta(sl.jogo, W - P * 2 - 70, fj), P + 28, meio - 14);
     x.fillStyle = "#eef2f6"; x.font = fm;
     x.fillText(corta(sl.mercado, W - P * 2 - 70, fm), P + 28, meio + fMerc * .72);
+    if (temRisco) {
+      // selo com o nível de risco e a confiança daquele palpite
+      const r = risco(sl.conf), rot = r.lbl + " · " + sl.conf + "%";
+      const py = meio + fMerc * .72 + 20;
+      x.font = "800 28px " + FT;
+      const lw = x.measureText(rot).width + 54;
+      x.fillStyle = r.c + "26"; x.beginPath();
+      if (x.roundRect) x.roundRect(P + 28, py, lw, 46, 23); else x.rect(P + 28, py, lw, 46);
+      x.fill();
+      x.fillStyle = r.c;
+      x.beginPath(); x.arc(P + 28 + 24, py + 23, 7, 0, Math.PI * 2); x.fill();
+      x.fillText(rot, P + 28 + 40, py + 32);
+    }
   });
+
+  // faixa com o resumo do bilhete inteiro
+  if (resumo) {
+    const ry = H - 272, rh = 96;
+    x.fillStyle = "#11171d"; x.beginPath();
+    if (x.roundRect) x.roundRect(P, ry, W - P * 2, rh, 22); else x.rect(P, ry, W - P * 2, rh);
+    x.fill();
+    const rb = risco(resumo.chance);
+    x.fillStyle = rb.c; x.fillRect(P, ry + 20, 6, rh - 40);
+    const col = (rot, val, cor, cx) => {
+      x.textAlign = "center";
+      x.fillStyle = "#8a96a3"; x.font = "600 24px " + FT;
+      x.fillText(rot, cx, ry + 38);
+      x.fillStyle = cor; x.font = "800 36px " + FT;
+      x.fillText(val, cx, ry + 78);
+    };
+    const larg = (W - P * 2) / 3;
+    col("Seleções", String(resumo.n), "#eef2f6", P + larg * .5);
+    col("Confiança média", resumo.media + "%", risco(resumo.media).c, P + larg * 1.5);
+    col("Chance de bater tudo", resumo.chance + "%", rb.c, P + larg * 2.5);
+    x.textAlign = "left";
+  }
 
   // aviso embaixo
   const ay = H - 140;
@@ -2532,8 +2575,9 @@ window.palImagemMeuBilhete = async el => {
   try {
     try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
     const logo = await carregarLogo();
-    const lista = slip.map(sl => ({jogo: short(sl.h) + " x " + short(sl.a) + " · " + whenLabel(sl), mercado: sl.mk}));
-    const c = imagemDoMeuBilhete(lista, logo);
+    const lista = slip.map(sl => ({jogo: short(sl.h) + " x " + short(sl.a) + " · " + whenLabel(sl), mercado: sl.mk, conf: +sl.conf || 0}));
+    const resumo = {n: slip.length, media: Math.round(slip.reduce((a, z) => a + z.conf, 0) / slip.length), chance: chanceBilhete(slip)};
+    const c = imagemDoMeuBilhete(lista, logo, resumo);
     const blob = await new Promise(ok => c.toBlob(ok, "image/png"));
     if (!blob) throw new Error("sem imagem");
     const nome = "meu-bilhete-" + dayOf(0) + ".png";
@@ -2567,7 +2611,7 @@ function slipView() {
     html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:${risco(avg).c}">${avg}%</b></span></div>
       <div class="slip-rsk">${rskTag(rb, "rsk-big")}<div class="ch">Chance de bater tudo<b style="color:${rb.c}">${ch}%</b></div></div>
       <button class="gen" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%"
-        onclick="window.palImagemMeuBilhete(this)">${ICONE_SHR}Gerar imagem do bilhete</button>`;
+        onclick="window.palImagemMeuBilhete(this)">${ICONE_SHR}Compartilhar palpite</button>`;
   }
   return html + (slip.length ? LEGENDA : "") + `</div><p class="note">${slip.length ? "A imagem sai pronta para mandar no grupo ou postar.<br>" : ""}Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
 }
