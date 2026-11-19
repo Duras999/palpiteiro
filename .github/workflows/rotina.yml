@@ -1,0 +1,36 @@
+# Confere se o site está de pé e manda os avisos no celular.
+# Roda de hora em hora e também dá para rodar na mão, pelo botão em Actions.
+name: Rotina
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: rotina
+  cancel-in-progress: false
+
+jobs:
+  rodar:
+    name: Conferir o site e avisar
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar as dependências
+        working-directory: rotina
+        run: npm install --no-audit --no-fund
+
+      - name: Rodar a rotina
+        working-directory: rotina
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          CALLMEBOT_FONE: ${{ secrets.CALLMEBOT_FONE }}
+        run: node diaria.js

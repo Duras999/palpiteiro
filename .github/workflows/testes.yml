@@ -1,0 +1,50 @@
+# Roda a suíte de testes a cada envio para o site.
+# Se algum teste falhar, aparece um X vermelho no commit do GitHub.
+name: Testes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ia/**'
+      - 'testes/**'
+      - '.github/workflows/testes.yml'
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  testar:
+    name: Abrir o app num navegador e conferir
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar as dependências
+        working-directory: testes
+        run: npm install --no-audit --no-fund
+
+      - name: Instalar o navegador
+        working-directory: testes
+        run: npx playwright install --with-deps chromium
+
+      - name: Rodar a suíte
+        working-directory: testes
+        run: node rodar.js
+
+      - name: Guardar as telas de quando dá errado
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: telas
+          path: testes/shots
+          retention-days: 7
+          if-no-files-found: ignore
