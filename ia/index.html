@@ -345,6 +345,47 @@
   .bar{flex:1;height:8px;background:#2a323c;border-radius:99px;overflow:hidden}
   .bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green2),var(--green))}
   .pct{font-weight:800;font-size:14px;color:var(--green);width:42px;text-align:right}
+  .push{background:linear-gradient(180deg,rgba(25,224,122,.10),rgba(25,224,122,0)),var(--card);
+        border:1px solid rgba(25,224,122,.28);border-radius:18px;padding:16px;margin:0 16px 12px}
+  .push-t b{display:block;font-size:16px;font-weight:800;margin-bottom:4px}
+  .push-t span{display:block;color:var(--mut);font-size:13px;line-height:1.5}
+  .push-b{display:flex;gap:8px;align-items:center;margin-top:12px}
+  .push-b .gen{flex:1;margin-top:0}
+  .push-n{color:var(--mut);font-size:14px;font-weight:600;padding:0 12px;white-space:nowrap}
+  .pf-nota{color:var(--mut);font-size:13px;line-height:1.5;padding:10px 2px 2px}
+  #rt-img{display:flex;align-items:center;justify-content:center;gap:8px}
+  .aviso-in{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));z-index:60;
+            display:flex;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--line);
+            border-radius:16px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);
+            transform:translateY(-130%);transition:transform .35s cubic-bezier(.2,.9,.3,1);max-width:520px;margin:0 auto}
+  .aviso-in.on{transform:translateY(0)}
+  .aviso-in img{width:36px;height:36px;border-radius:11px;flex:0 0 auto}
+  .aviso-in b{display:block;font-size:14px;font-weight:800}
+  .aviso-in span{display:block;color:var(--mut);font-size:13px;line-height:1.4}
+  .retro{text-align:center}
+  .rt-n{display:flex;align-items:baseline;justify-content:center;gap:8px;font-size:15px;color:var(--mut)}
+  .rt-n b{font-size:40px;font-weight:800;letter-spacing:-1px}
+  .rt-n em{font-style:normal;opacity:.4;margin:0 4px}
+  .rt-pct{display:flex;align-items:center;gap:10px;margin:14px 0 2px}
+  .rt-pct b{font-size:16px;font-weight:800;width:46px;text-align:right}
+  .rt-bar{flex:1;height:12px;border-radius:99px;background:rgba(255,90,90,.35);overflow:hidden}
+  .rt-bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+  .rt-dias{display:flex;gap:6px;justify-content:space-between;margin-top:18px;overflow-x:auto;padding-bottom:4px}
+  .rt-d{flex:1 0 24px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .rt-d span{font-size:10px;color:var(--mut);white-space:nowrap}
+  .rt-col{height:54px;width:14px;display:flex;flex-direction:column-reverse;gap:2px;justify-content:flex-start}
+  .rt-col i{display:block;width:100%;border-radius:3px;min-height:2px}
+  .rt-col i.g{background:var(--green)}
+  .rt-col i.r{background:var(--red)}
+  .bt-par{display:flex;gap:8px;align-items:stretch}
+  .bt-par .ready-btn{flex:1}
+  .shr{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
+       background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:14px;
+       padding:0 14px;font-size:14px;font-weight:700;margin-top:10px}
+  .dia .shr{margin-top:0}
+  .shr:active{opacity:.7}
+  .shr:disabled{opacity:.6}
+  .shr svg{flex:0 0 auto}
   .aviso-conf{color:var(--mut);font-size:12px;line-height:1.5;margin:8px 0 2px}
   .aviso-conf b{color:#aab4bf}
   .bv-18{color:var(--mut);font-size:12px;line-height:1.45;text-align:center;margin:2px 0 10px}
@@ -516,16 +557,334 @@ function linkDoBilhete(b) {
   if (b.codigo) return base ? base.split("{q}")[0] + encodeURIComponent(b.codigo) : CASA + encodeURIComponent(b.codigo);
   return base ? base.replace("{q}", "") : CASA_SPORTS;
 }
+/* ---------- QR code do app, feito aqui mesmo ---------- */
+const qrMatriz = (() => {
+
+  // --- aritmética do corpo finito usado pela correção de erro ---
+  const EXP = new Uint8Array(512), LOG = new Uint8Array(256);
+  for (let i = 0, x = 1; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= 0x11d; }
+  for (let i = 255; i < 512; i++) EXP[i] = EXP[i - 255];
+  const mul = (a, b) => (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]];
+
+  const gerador = n => {
+    let g = [1];
+    for (let i = 0; i < n; i++) {
+      const novo = new Array(g.length + 1).fill(0);
+      // g fica em ordem decrescente: g[0] é o coeficiente do maior expoente
+      for (let j = 0; j < g.length; j++) { novo[j] ^= g[j]; novo[j + 1] ^= mul(g[j], EXP[i]); }
+      g = novo;
+    }
+    return g;
+  };
+  const resto = (dados, n) => {
+    const g = gerador(n), r = new Array(n).fill(0);
+    for (const d of dados) {
+      const f = d ^ r[0];
+      r.shift(); r.push(0);
+      if (f) for (let i = 0; i < n; i++) r[i] ^= mul(g[i + 1], f);
+    }
+    return r;
+  };
+
+  // versão: [codewords de correção por bloco, [blocos, dados], [blocos, dados]]
+  const VERSOES = [
+    null,
+    [10, [1, 16]], [16, [1, 28]], [26, [1, 44]], [18, [2, 32]], [24, [2, 43]],
+    [16, [4, 27]], [18, [4, 31]], [22, [2, 38], [2, 39]], [22, [3, 36], [2, 37]], [26, [4, 43], [1, 44]]
+  ];
+  const ALINHA = [null, [], [6, 18], [6, 22], [6, 26], [6, 30], [6, 34], [6, 22, 38], [6, 24, 42], [6, 26, 46], [6, 28, 50]];
+
+  const bchFormato = v => { let d = v << 10; for (let i = 4; i >= 0; i--) if (d & (1 << (i + 10))) d ^= 0x537 << i; return ((v << 10) | d) ^ 0x5412; };
+  const bchVersao = v => { let d = v << 12; for (let i = 5; i >= 0; i--) if (d & (1 << (i + 12))) d ^= 0x1f25 << i; return (v << 12) | d; };
+
+  function matriz(texto) {
+    const bytes = new TextEncoder().encode(texto);
+    let versao = 0;
+    for (let v = 1; v <= 10; v++) {
+      const d = VERSOES[v].slice(1).reduce((a, [b, n]) => a + b * n, 0);
+      const cabeca = 4 + (v < 10 ? 8 : 16);
+      if (d * 8 - cabeca >= bytes.length * 8) { versao = v; break; }
+    }
+    if (!versao) throw new Error("texto longo demais para o QR");
+
+    const [ec, ...grupos] = VERSOES[versao];
+    const totalDados = grupos.reduce((a, [b, n]) => a + b * n, 0);
+
+    // monta o fluxo de bits: modo, tamanho, conteúdo, fim e enchimento
+    const bits = [];
+    const put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >> i) & 1); };
+    put(4, 4);
+    put(bytes.length, versao < 10 ? 8 : 16);
+    bytes.forEach(b => put(b, 8));
+    for (let i = 0; i < 4 && bits.length < totalDados * 8; i++) bits.push(0);
+    while (bits.length % 8) bits.push(0);
+    const dados = [];
+    for (let i = 0; i < bits.length; i += 8) dados.push(parseInt(bits.slice(i, i + 8).join(""), 2));
+    for (let i = 0; dados.length < totalDados; i++) dados.push(i % 2 ? 0x11 : 0xec);
+
+    // separa em blocos, calcula a correção de cada um e intercala
+    const blocosD = [], blocosE = [];
+    let p = 0;
+    for (const [qtd, n] of grupos) for (let i = 0; i < qtd; i++) {
+      const b = dados.slice(p, p + n); p += n;
+      blocosD.push(b); blocosE.push(resto(b, ec));
+    }
+    const fluxo = [];
+    const maxD = Math.max(...blocosD.map(b => b.length));
+    for (let i = 0; i < maxD; i++) for (const b of blocosD) if (i < b.length) fluxo.push(b[i]);
+    for (let i = 0; i < ec; i++) for (const b of blocosE) fluxo.push(b[i]);
+
+    // desenha a grade
+    const N = versao * 4 + 17;
+    const m = Array.from({length: N}, () => new Array(N).fill(null));
+    const fixo = Array.from({length: N}, () => new Array(N).fill(false));
+    const por = (x, y, v) => { if (x >= 0 && y >= 0 && x < N && y < N) { m[y][x] = v; fixo[y][x] = true; } };
+
+    const finder = (cx, cy) => {
+      for (let dy = -1; dy <= 7; dy++) for (let dx = -1; dx <= 7; dx++) {
+        const x = cx + dx, y = cy + dy;
+        const borda = dx === -1 || dx === 7 || dy === -1 || dy === 7;
+        const dentro = dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4;
+        const anel = dx === 0 || dx === 6 || dy === 0 || dy === 6;
+        por(x, y, borda ? 0 : (anel || dentro) ? 1 : 0);
+      }
+    };
+    finder(0, 0); finder(N - 7, 0); finder(0, N - 7);
+
+    for (let i = 8; i < N - 8; i++) { por(i, 6, i % 2 === 0 ? 1 : 0); por(6, i, i % 2 === 0 ? 1 : 0); }
+
+    const cs = ALINHA[versao];
+    for (const cy of cs) for (const cx of cs) {
+      if ((cx < 9 && cy < 9) || (cx > N - 10 && cy < 9) || (cx < 9 && cy > N - 10)) continue;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++)
+        por(cx + dx, cy + dy, (Math.abs(dx) === 2 || Math.abs(dy) === 2 || (dx === 0 && dy === 0)) ? 1 : 0);
+    }
+
+    // reserva o espaço do formato dos dois lados, sem apagar o que já existe
+    for (let i = 0; i < 9; i++) { por(i, 8, m[8][i] === null ? 0 : m[8][i]); por(8, i, m[i][8] === null ? 0 : m[i][8]); }
+    for (let i = 0; i < 8; i++) { por(N - 1 - i, 8, 0); por(8, N - 1 - i, 0); }
+    por(8, N - 8, 1);                       // módulo que é sempre escuro, por último
+
+    if (versao >= 7) {
+      const vi = bchVersao(versao);
+      for (let i = 0; i < 18; i++) {
+        const b = (vi >> i) & 1, a = Math.floor(i / 3), c = i % 3;
+        por(a, N - 11 + c, b); por(N - 11 + c, a, b);
+      }
+    }
+
+    // joga os dados no zigue-zague, de baixo para cima
+    let bi = 0, subindo = true;
+    const livre = [];
+    for (let col = N - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      for (let k = 0; k < N; k++) {
+        const y = subindo ? N - 1 - k : k;
+        for (const x of [col, col - 1]) if (!fixo[y][x]) livre.push([x, y]);
+      }
+      subindo = !subindo;
+    }
+    for (const [x, y] of livre) {
+      const b = bi < fluxo.length * 8 ? (fluxo[bi >> 3] >> (7 - (bi & 7))) & 1 : 0;
+      m[y][x] = b; bi++;
+    }
+
+    const regra = (x, y, k) => [
+      (y + x) % 2, y % 2, x % 3, (y + x) % 3,
+      (Math.floor(y / 2) + Math.floor(x / 3)) % 2,
+      ((y * x) % 2) + ((y * x) % 3), (((y * x) % 2) + ((y * x) % 3)) % 2,
+      (((y + x) % 2) + ((y * x) % 3)) % 2
+    ][k] === 0;
+
+    const penal = g => {
+      let s = 0;
+      const linhas = [g, g[0].map((_, i) => g.map(r => r[i]))];
+      for (const L of linhas) for (const r of L) {
+        let run = 1;
+        for (let i = 1; i < r.length; i++) {
+          if (r[i] === r[i - 1]) run++; else { if (run >= 5) s += 3 + run - 5; run = 1; }
+        }
+        if (run >= 5) s += 3 + run - 5;
+        const t = r.join("");
+        for (const pat of ["1011101 0000", "0000 1011101"].map(x => x.replace(" ", ""))) {
+          let i = -1; while ((i = t.indexOf(pat, i + 1)) >= 0) s += 40;
+        }
+      }
+      for (let y = 0; y < N - 1; y++) for (let x = 0; x < N - 1; x++)
+        if (g[y][x] === g[y][x + 1] && g[y][x] === g[y + 1][x] && g[y][x] === g[y + 1][x + 1]) s += 3;
+      const escuros = g.flat().filter(v => v === 1).length;
+      s += 10 * Math.floor(Math.abs(escuros * 100 / (N * N) - 50) / 5);
+      return s;
+    };
+
+    let melhor = null, melhorNota = Infinity;
+    for (let k = 0; k < 8; k++) {
+      const g = m.map((r, y) => r.map((v, x) => fixo[y][x] ? v : (v ^ (regra(x, y, k) ? 1 : 0))));
+      const f = bchFormato((0 << 3) | k);   // 0 = nível M
+      for (let i = 0; i < 15; i++) {
+        const b = (f >> i) & 1;
+        g[i < 6 ? i : i < 8 ? i + 1 : N - 15 + i][8] = b;          // cópia de cima, na coluna 8
+        g[8][i < 8 ? N - 1 - i : i < 9 ? 15 - i : 15 - i - 1] = b; // cópia da direita, na linha 8
+      }
+      g[N - 8][8] = 1;
+      const nota = penal(g);
+      if (nota < melhorNota) { melhorNota = nota; melhor = g; }
+    }
+    return melhor;
+  };
+  return matriz;
+})();
+
+/* ---------- item 21: o bilhete vira imagem para postar ----------
+   Desenhado no próprio celular, sem servidor: marca, jogos, QR code
+   do app e o aviso de que é análise e não promessa. */
+const AVISO_IMG = ["O Palpiteiro faz análise estatística e não garante resultado.",
+                   "+18 · Aposte com responsabilidade."];
+function desenhaQr(x, texto, x0, y0, lado) {
+  let m = null;
+  try { m = qrMatriz(texto); } catch (e) { return false; }
+  const N = m.length, q = 3, S = lado / (N + q * 2);
+  x.fillStyle = "#fff";
+  x.beginPath();
+  if (x.roundRect) x.roundRect(x0, y0, lado, lado, lado * .07); else x.rect(x0, y0, lado, lado);
+  x.fill();
+  x.fillStyle = "#000";
+  for (let y = 0; y < N; y++) for (let i = 0; i < N; i++)
+    if (m[y][i]) x.fillRect(x0 + (i + q) * S, y0 + (y + q) * S, Math.ceil(S), Math.ceil(S));
+  return true;
+}
+function imagemDoBilhete(b) {
+  const W = 1080, H = 1350, P = 72;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const FT = '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  const g = x.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, "#0d1217"); g.addColorStop(1, "#070a0d");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const br = x.createRadialGradient(170, 150, 0, 170, 150, 600);
+  br.addColorStop(0, "rgba(25,224,122,.18)"); br.addColorStop(1, "rgba(25,224,122,0)");
+  x.fillStyle = br; x.fillRect(0, 0, W, H);
+
+  // marca
+  const ls = 88;
+  const lg = x.createLinearGradient(P, P, P + ls, P + ls);
+  lg.addColorStop(0, "#19e07a"); lg.addColorStop(1, "#0a8f4c");
+  x.fillStyle = lg; x.beginPath();
+  if (x.roundRect) x.roundRect(P, P, ls, ls, 27); else x.rect(P, P, ls, ls);
+  x.fill();
+  x.fillStyle = "#04210f"; x.font = "800 52px " + FT;
+  x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText("P", P + ls / 2, P + ls / 2 + 2);
+  x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.font = "800 56px " + FT;
+  const t1 = "Palpi", w1 = x.measureText(t1).width;
+  x.fillStyle = "#eef2f6"; x.fillText(t1, P + ls + 24, P + 62);
+  x.fillStyle = "#19e07a"; x.fillText("teiro", P + ls + 24 + w1, P + 62);
+
+  // faixa do nível e da odd
+  const r = riscoNome(b.tipo, b.odd);
+  let y = P + ls + 72;
+  const rot = (b.sel.length === 1 ? "PALPITE DO DIA" : (r ? r.lbl.toUpperCase() : "BILHETE"));
+  x.font = "800 30px " + FT;
+  const wp = x.measureText(rot).width + 44;
+  x.fillStyle = r ? r.c : "#19e07a";
+  x.beginPath();
+  if (x.roundRect) x.roundRect(P, y - 34, wp, 50, 25); else x.rect(P, y - 34, wp, 50);
+  x.fill();
+  x.fillStyle = "#0b0e12"; x.fillText(rot, P + 22, y);
+  if (b.odd) {
+    x.textAlign = "right";
+    x.fillStyle = "#8a96a3"; x.font = "500 30px " + FT; x.fillText("ODD", W - P - 2, y - 30);
+    x.fillStyle = "#eef2f6"; x.font = "800 56px " + FT; x.fillText(String(b.odd), W - P, y + 14);
+    x.textAlign = "left";
+  }
+
+  // jogos do bilhete
+  y += 86;
+  const fim = H - 430;
+  const n = Math.min(b.sel.length, 7);
+  const teto = n === 1 ? 300 : n === 2 ? 230 : 160;
+  const alt = Math.min(teto, Math.max(92, (fim - y) / Math.max(n, 1)));
+  y += Math.max(0, (fim - y - alt * n) / 2);   // centraliza quando sobra espaço
+  const fJogo = n === 1 ? 36 : 29, fMerc = n === 1 ? 58 : n === 2 ? 44 : 36;
+  const corta = (t, max, fonte) => { x.font = fonte; let v = String(t);
+    while (x.measureText(v).width > max && v.length > 4) v = v.slice(0, -2);
+    return v === String(t) ? v : v + "…"; };
+  b.sel.slice(0, 7).forEach((sl, i) => {
+    const top = y + i * alt;
+    x.fillStyle = "#11171d"; x.beginPath();
+    if (x.roundRect) x.roundRect(P, top, W - P * 2, alt - 14, 22); else x.rect(P, top, W - P * 2, alt - 14);
+    x.fill();
+    x.fillStyle = "#19e07a"; x.fillRect(P, top + 18, 6, Math.max(24, alt - 50));
+    const meio = top + (alt - 14) / 2;
+    const fj = "600 " + fJogo + "px " + FT, fm = "800 " + fMerc + "px " + FT;
+    x.fillStyle = "#8a96a3"; x.font = fj;
+    x.fillText(corta(sl.jogo + (sl.hora ? " · " + sl.hora : ""), W - P * 2 - 70, fj), P + 28, meio - 16);
+    x.fillStyle = "#eef2f6"; x.font = fm;
+    x.fillText(corta(sl.mercado, W - P * 2 - 70, fm), P + 28, meio + fMerc * .75);
+  });
+
+  // QR do app e endereço
+  const qs = 210, qy = H - 390;
+  desenhaQr(x, "https://opalpiteiro.online/", P, qy, qs);
+  x.fillStyle = "#eef2f6"; x.font = "800 44px " + FT;
+  x.fillText("opalpiteiro.online", P + qs + 34, qy + 76);
+  x.fillStyle = "#8a96a3"; x.font = "500 29px " + FT;
+  x.fillText("Aponte a câmera e abra o app.", P + qs + 34, qy + 124);
+  x.fillText("Grátis, com os jogos de hoje.", P + qs + 34, qy + 164);
+
+  // aviso
+  const ay = H - 140;
+  x.fillStyle = "#11171d"; x.beginPath();
+  if (x.roundRect) x.roundRect(P, ay, W - P * 2, 104, 22); else x.rect(P, ay, W - P * 2, 104);
+  x.fill();
+  x.fillStyle = "#6b7682"; x.font = "500 26px " + FT; x.textAlign = "center";
+  AVISO_IMG.forEach((t, i) => x.fillText(t, W / 2, ay + 42 + i * 36));
+  return c;
+}
+window.palCompartilhar = async (id, el) => {
+  const b = (window.palTickets || []).find(t => String(t.id) === String(id));
+  if (!b || !Array.isArray(b.sel) || !b.sel.length) return toast("Bilhete não encontrado");
+  const antes = el ? el.textContent : "";
+  if (el) { el.disabled = true; el.textContent = "Montando…"; }
+  try {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+    const c = imagemDoBilhete(b);
+    const blob = await new Promise(ok => c.toBlob(ok, "image/png"));
+    if (!blob) throw new Error("sem imagem");
+    const nome = "palpiteiro-" + (b.date || "bilhete") + ".png";
+    const arq = new File([blob], nome, {type: "image/png"});
+    const texto = "Bilhete do dia no Palpiteiro · opalpiteiro.online";
+    if (navigator.canShare && navigator.canShare({files: [arq]})) {
+      await navigator.share({files: [arq], text: texto});
+    } else {
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(u), 4000);
+      toast("Imagem salva no seu celular");
+    }
+    window.track && window.track("tickets");
+  } catch (e) {
+    if (!/AbortError/.test(String(e && e.name))) toast("Não deu para montar a imagem");
+  }
+  if (el) { el.disabled = false; el.textContent = antes; }
+};
+
 // O bilhete de uma seleção só é, por definição, o palpite mais forte do dia.
 const palpiteDoDia = list => list.find(b => (b.sel || []).length === 1) || null;
+const btCompartilhar = b => !b.id ? "" :
+  `<button class="shr" onclick="window.palCompartilhar('${esc(b.id)}',this)" aria-label="Compartilhar como imagem">${ICONE_SHR}Imagem</button>`;
 function cardDoDia(b) {
   if (!b) return "";
   const r = riscoNome(b.tipo, b.odd), s = b.sel[0];
   return `<div class="dia fade"><div class="dia-h">⭐<b>Palpite do dia</b>${r ? rskTag(r) : ""}</div>
     <div class="dia-j">${esc(s.jogo)}${s.hora ? " · " + esc(s.hora) : ""}</div>
     <div class="dia-m">${esc(s.mercado)}</div>
-    <a class="gen ready-btn" style="margin-top:0" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener"
-       onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`;
+    <div class="bt-par"><a class="gen ready-btn" style="margin-top:0" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener"
+       onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a>
+      ${btCompartilhar(b)}</div></div>`;
 }
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
@@ -538,7 +897,7 @@ function readyView() {
   return cardDoDia(dia) + `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
-      `<a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a></div>`).join("") +
+      `<div class="bt-par"><a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a>${btCompartilhar(b)}</div></div>`).join("") +
     `<p class="ready-note">Bilhete é sugestão, não é garantia: pode vir red.<br>${list.some(b => b.codigo) ? "O botão abre a casa de apostas com o bilhete já montado. As odds podem mudar até o jogo." : "Monte as seleções na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
 }
 
@@ -662,6 +1021,385 @@ window.palBemVindo = () => {
     <button class="gen" id="bv-ok">Começar</button></div>`;
   el.querySelector("#bv-ok").onclick = () => { el.hidden = true; el.innerHTML = ""; };
   el.onclick = e => { if (e.target === el) { el.hidden = true; el.innerHTML = ""; } };
+};
+
+
+
+/* ---------- item 9: o motor se corrige sozinho ----------
+   Todo palpite é gravado antes do apito e conferido depois. Juntando o que
+   o app prometeu com o que aconteceu, dá para saber em que tipo de palpite
+   ele fala demais — e descontar isso na confiança do próximo. */
+const FAMILIAS = [
+  [/^Vitória do /i, "vitoria"],
+  [/^Empate no 1º tempo$/i, "empate1t"],
+  [/1º tempo/i, "primeiro"],
+  [/cartões/i, "cartoes"],
+  [/vence por 2 ou mais|não perde por 2 ou mais/i, "handicap"],
+  [/^(Mais|Menos) de [\d.]+ gols$/i, "gols"],
+  [/^Ambas marcam/i, "ambas"],
+  [/marca: Sim$/i, "marca"],
+  [/^Empate/i, "empate"]
+];
+const familiaDe = mk => { for (const [re, k] of FAMILIAS) if (re.test(String(mk || ""))) return k; return "outros"; };
+// com pouca amostra o ajuste é puxado para perto de zero, para não corrigir no susto
+const MIN_AMOSTRA = 25, TETO_AJUSTE = 10;
+function calcularAjustes(medidos) {
+  const por = new Map();
+  for (const d of medidos) {
+    if (!Array.isArray(d.picks) || !Array.isArray(d.acertos)) continue;
+    d.picks.forEach((p, i) => {
+      const ok = d.acertos[i];
+      if (typeof ok !== "boolean") return;
+      const k = familiaDe(p.mk);
+      const o = por.get(k) || {n: 0, acertos: 0, prometido: 0};
+      o.n++; if (ok) o.acertos++; o.prometido += (+p.conf || 0);
+      por.set(k, o);
+    });
+  }
+  const ajustes = {};
+  for (const [k, o] of por) {
+    if (o.n < MIN_AMOSTRA) continue;
+    const real = o.acertos / o.n * 100, dito = o.prometido / o.n;
+    const cru = real - dito;
+    const encolhe = o.n / (o.n + 40);           // amostra pequena mexe pouco
+    const v = Math.max(-TETO_AJUSTE, Math.min(TETO_AJUSTE, cru * encolhe));
+    if (Math.abs(v) >= 1) ajustes[k] = {d: Math.round(v * 10) / 10, n: o.n};
+  }
+  return ajustes;
+}
+// conta para a pessoa quando o motor já se corrigiu naquele tipo de palpite
+const avisoCalibragem = A => {
+  if (!window.palAjuste || !A || !A.picks || !A.picks.length) return "";
+  const usados = [...new Set(A.picks.map(p => familiaDe(p.mk)))];
+  const mexidos = usados.map(k => window.palAjuste[k]).filter(Boolean);
+  if (!mexidos.length) return "";
+  const pra = mexidos.some(x => x.d < 0) ? "baixo" : "cima";
+  const n = Math.max(...mexidos.map(x => x.n || 0));
+  return `<br>Esses números já vêm corrigidos para ${pra}: o Palpiteiro conferiu ${n} palpites desse tipo e acertou ${pra === "baixo" ? "menos" : "mais"} do que prometia.`;
+};
+const ajusteDe = mk => {
+  const A = window.palAjuste;
+  if (!A) return 0;
+  const a = A[familiaDe(mk)];
+  return a && Number.isFinite(+a.d) ? +a.d : 0;
+};
+const CALKEY = "pal-calibrado";
+async function calibrarMotor() {
+  if (!window.palIsAdmin || !window.palCalibra || !window.palCalibra.medidos) return false;
+  const hoje = dayOf(0);
+  let feito = ""; try { feito = localStorage.getItem(CALKEY) || ""; } catch (e) {}
+  if (feito === hoje) return false;
+  store(CALKEY, hoje);
+  const medidos = await window.palCalibra.medidos(dayOf(-120)).catch(() => []);
+  if (!medidos.length) return false;
+  const ajustes = calcularAjustes(medidos);
+  await window.palCalibra.salvarAjuste({ajustes, amostra: medidos.length});
+  window.palAjuste = ajustes;
+  return true;
+}
+
+/* ---------- item 12: retrospecto green e red ----------
+   O administrador confere sozinho os bilhetes dos dias passados, usando o
+   placar final de cada jogo, e o resumo vira uma página que qualquer um abre. */
+const CONFKEY = "pal-conferido";
+const chave = t => String(t || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+// "Flamengo x Vasco" -> acha a partida daquele dia pelos dois nomes
+function acharPartida(jogo, lista) {
+  const partes = String(jogo || "").split(/\s+x\s+/i);
+  if (partes.length !== 2) return null;
+  const [a, b] = partes.map(x => chave(short(x.trim())));
+  if (!a || !b) return null;
+  const casa = m => chave(short(m.home)), fora = m => chave(short(m.away));
+  const bate = (x, y) => x === y || (x.length > 4 && y.length > 4 && (x.includes(y) || y.includes(x)));
+  return lista.find(m => bate(casa(m), a) && bate(fora(m), b)) || null;
+}
+async function partidasDoDia(dia) {
+  const r = await getJSON(`${API}/fixtures/?sport=football&date=${dia}&limit=200`, 240).catch(() => null);
+  const seg = new Date(new Date(dia + "T12:00:00Z").getTime() + 86400000).toISOString().slice(0, 10);
+  const r2 = await getJSON(`${API}/fixtures/?sport=football&date=${seg}&limit=200`, 240).catch(() => null);
+  const todas = [...((r && r.matches) || []), ...((r2 && r2.matches) || [])];
+  return todas.filter(m => m.status === "finished" && m.time && localDay(new Date(m.time)) === dia);
+}
+async function conferirBilhetes() {
+  if (!window.palIsAdmin || !window.palHist) return false;
+  const hoje = dayOf(0);
+  let feito = ""; try { feito = localStorage.getItem(CONFKEY) || ""; } catch (e) {}
+  if (feito === hoje) return false;
+  store(CONFKEY, hoje);
+  const desde = dayOf(-21);
+  const todos = await window.palHist.passados(desde).catch(() => []);
+  const pend = todos.filter(b => b && b.date < hoje && !b.resultado && Array.isArray(b.sel) && b.sel.length);
+  const dias = [...new Set(pend.map(b => b.date))].sort().slice(-7);
+  let mexeu = false;
+  for (const dia of dias) {
+    const lista = await partidasDoDia(dia).catch(() => []);
+    if (!lista.length) continue;
+    for (const b of pend.filter(x => x.date === dia)) {
+      const acertos = b.sel.map(sl => {
+        const m = acharPartida(sl.jogo, lista);
+        if (!m) return null;
+        return conferirMercado(sl.mercado, {h: m.home_score, a: m.away_score}, m);
+      });
+      if (acertos.some(x => x === null)) continue;   // falta jogo: fica para amanhã
+      const res = acertos.every(Boolean) ? "green" : "red";
+      await window.palHist.marcar(b.id, {resultado: res, acertos});
+      b.resultado = res; b.acertos = acertos;
+      mexeu = true;
+    }
+  }
+  if (mexeu || !todos.some(b => b.resumido)) await publicarResumo(todos);
+  return mexeu;
+}
+const resumoDeBilhetes = lista => {
+  const feitos = lista.filter(b => b.resultado === "green" || b.resultado === "red");
+  const porDia = new Map();
+  feitos.forEach(b => {
+    const o = porDia.get(b.date) || {d: b.date, g: 0, r: 0};
+    b.resultado === "green" ? o.g++ : o.r++;
+    porDia.set(b.date, o);
+  });
+  const dias = [...porDia.values()].sort((a, b) => a.d < b.d ? 1 : -1).slice(0, 21);
+  const g = feitos.filter(b => b.resultado === "green").length;
+  return {
+    total: {g, r: feitos.length - g},
+    dias: dias.reverse(),
+    ult: feitos.sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 12).map(b => ({
+      date: b.date, tipo: String(b.tipo || ""), odd: String(b.odd || ""), resultado: b.resultado,
+      sel: (b.sel || []).slice(0, 6).map((x, i) => ({jogo: String(x.jogo || "").slice(0, 60),
+        mercado: String(x.mercado || "").slice(0, 40), ok: !!(b.acertos || [])[i]}))
+    }))
+  };
+};
+const publicarResumo = async lista => window.palHist && window.palHist.publicar(resumoDeBilhetes(lista));
+
+
+/* ---------- item 16: card de resultado para postar ----------
+   A mesma imagem do bilhete, mas contando como foi o dia. É o que dá para
+   postar sem precisar pedir que ninguém acredite na palavra. */
+function imagemDoResultado(R, dia) {
+  const bils = (R.ult || []).filter(b => b.date === dia);
+  const g = bils.filter(b => b.resultado === "green").length, r = bils.length - g;
+  const W = 1080, H = 1350, P = 72;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const FT = '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  const venceu = g > r, cor = venceu ? "#19e07a" : g === r ? "#ffd34d" : "#ff5a5a";
+  const fundo = x.createLinearGradient(0, 0, W, H);
+  fundo.addColorStop(0, "#0d1217"); fundo.addColorStop(1, "#070a0d");
+  x.fillStyle = fundo; x.fillRect(0, 0, W, H);
+  const br = x.createRadialGradient(540, 420, 0, 540, 420, 680);
+  br.addColorStop(0, cor + "26"); br.addColorStop(1, cor + "00");
+  x.fillStyle = br; x.fillRect(0, 0, W, H);
+
+  // marca
+  const ls = 88;
+  const lg = x.createLinearGradient(P, P, P + ls, P + ls);
+  lg.addColorStop(0, "#19e07a"); lg.addColorStop(1, "#0a8f4c");
+  x.fillStyle = lg; x.beginPath();
+  if (x.roundRect) x.roundRect(P, P, ls, ls, 27); else x.rect(P, P, ls, ls);
+  x.fill();
+  x.fillStyle = "#04210f"; x.font = "800 52px " + FT;
+  x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText("P", P + ls / 2, P + ls / 2 + 2);
+  x.textAlign = "left"; x.textBaseline = "alphabetic";
+  x.font = "800 56px " + FT;
+  const t1 = "Palpi", w1 = x.measureText(t1).width;
+  x.fillStyle = "#eef2f6"; x.fillText(t1, P + ls + 24, P + 62);
+  x.fillStyle = "#19e07a"; x.fillText("teiro", P + ls + 24 + w1, P + 62);
+  x.textAlign = "right";
+  x.fillStyle = "#8a96a3"; x.font = "600 34px " + FT;
+  x.fillText(dia.split("-").reverse().slice(0, 2).join("/"), W - P, P + 62);
+
+  // placar do dia
+  x.textAlign = "center";
+  x.fillStyle = "#8a96a3"; x.font = "700 30px " + FT;
+  x.fillText("COMO FOI O DIA", W / 2, 290);
+  x.font = "800 180px " + FT;
+  const sg = String(g), sr = String(r), sep = "  ·  ";
+  const wg = x.measureText(sg).width, ws = x.measureText(sep).width, wr = x.measureText(sr).width;
+  let px = (W - (wg + ws + wr)) / 2;
+  x.textAlign = "left";
+  const meioG = px + wg / 2, meioR = px + wg + ws + wr / 2;
+  x.fillStyle = "#19e07a"; x.fillText(sg, px, 440); px += wg;
+  x.fillStyle = "#3a434d"; x.fillText(sep, px, 440); px += ws;
+  x.fillStyle = "#ff5a5a"; x.fillText(sr, px, 440);
+  x.textAlign = "center";
+  x.fillStyle = "#8a96a3"; x.font = "700 34px " + FT;
+  x.fillText("GREEN", meioG, 494);
+  x.fillText("RED", meioR, 494);
+
+  // os bilhetes do dia
+  let y = 580;
+  const fim = H - 430;
+  const n = Math.min(bils.length, 5);
+  const alt = Math.min(180, Math.max(96, (fim - y) / Math.max(n, 1)));
+  y += Math.max(0, (fim - y - alt * n) / 2);
+  const corta = (t, max, fonte) => { x.font = fonte; let v = String(t);
+    while (x.measureText(v).width > max && v.length > 4) v = v.slice(0, -2);
+    return v === String(t) ? v : v + "…"; };
+  x.textAlign = "left";
+  bils.slice(0, 5).forEach((b, i) => {
+    const top = y + i * alt, verde = b.resultado === "green";
+    x.fillStyle = "#11171d"; x.beginPath();
+    if (x.roundRect) x.roundRect(P, top, W - P * 2, alt - 14, 22); else x.rect(P, top, W - P * 2, alt - 14);
+    x.fill();
+    x.fillStyle = verde ? "#19e07a" : "#ff5a5a";
+    x.fillRect(P, top + 18, 6, Math.max(24, alt - 50));
+    const meio = top + (alt - 14) / 2;
+    x.font = "800 34px " + FT;
+    x.fillText(verde ? "GREEN" : "RED", P + 30, meio - 14);
+    x.fillStyle = "#8a96a3"; x.font = "600 27px " + FT;
+    const jogos = (b.sel || []).map(z => z.mercado).join(" + ");
+    x.fillText(corta(jogos, W - P * 2 - 230, "600 27px " + FT), P + 30, meio + 26);
+    if (b.odd) {
+      x.textAlign = "right";
+      x.fillStyle = "#eef2f6"; x.font = "800 40px " + FT;
+      x.fillText("Odd " + b.odd, W - P - 28, meio + 8);
+      x.textAlign = "left";
+    }
+  });
+
+  // QR e aviso
+  const qs = 210, qy = H - 390;
+  desenhaQr(x, "https://opalpiteiro.online/retrospecto/", P, qy, qs);
+  x.fillStyle = "#eef2f6"; x.font = "800 42px " + FT;
+  x.fillText("Todos os resultados", P + qs + 34, qy + 72);
+  x.fillStyle = "#8a96a3"; x.font = "500 29px " + FT;
+  x.fillText("opalpiteiro.online/retrospecto", P + qs + 34, qy + 120);
+  x.fillText("Green e red, sem esconder nada.", P + qs + 34, qy + 160);
+  const ay = H - 140;
+  x.fillStyle = "#11171d"; x.beginPath();
+  if (x.roundRect) x.roundRect(P, ay, W - P * 2, 104, 22); else x.rect(P, ay, W - P * 2, 104);
+  x.fill();
+  x.fillStyle = "#6b7682"; x.font = "500 26px " + FT; x.textAlign = "center";
+  AVISO_IMG.forEach((t, i) => x.fillText(t, W / 2, ay + 42 + i * 36));
+  return c;
+}
+window.palImagemDia = async el => {
+  if (!retro || !retro.ult || !retro.ult.length) return toast("Ainda não tem dia fechado");
+  const dia = retro.ult[0].date;
+  const antes = el ? el.textContent : "";
+  if (el) { el.disabled = true; el.textContent = "Montando…"; }
+  try {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+    const c = imagemDoResultado(retro, dia);
+    const blob = await new Promise(ok => c.toBlob(ok, "image/png"));
+    const nome = "palpiteiro-resultado-" + dia + ".png";
+    const arq = new File([blob], nome, {type: "image/png"});
+    const texto = "Resultado do dia no Palpiteiro · opalpiteiro.online/retrospecto";
+    if (navigator.canShare && navigator.canShare({files: [arq]})) await navigator.share({files: [arq], text: texto});
+    else {
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(u), 4000);
+      toast("Imagem salva no seu celular");
+    }
+  } catch (e) {
+    if (!/AbortError/.test(String(e && e.name))) toast("Não deu para montar a imagem");
+  }
+  if (el) { el.disabled = false; el.textContent = antes; }
+};
+
+let retro = null, retroBusy = false;
+// o administrador pode forçar a conferência sem esperar o dia virar
+window.palConferirAgora = async el => {
+  if (el) { el.disabled = true; el.textContent = "Conferindo…"; }
+  try { localStorage.removeItem(CONFKEY); } catch (e) {}
+  const mexeu = await conferirBilhetes().catch(() => false);
+  retro = null;
+  if (el) { el.disabled = false; el.textContent = "Conferir os bilhetes agora"; }
+  toast(mexeu ? "Bilhetes conferidos" : "Nada novo para conferir");
+  render();
+};
+async function retroView() {
+  const head = `<div class="top"><div class="tbar"><button class="tback" onclick="go('')" aria-label="Voltar">←</button><h1>Retros<span>pecto</span></h1></div></div>`;
+  if (retro === null && !retroBusy && window.palHist) {
+    retroBusy = true;
+    window.palHist.passados(dayOf(-60)).then(l => { retro = resumoDeBilhetes(l || []); retroBusy = false; render(); })
+      .catch(() => { retro = {total: {g: 0, r: 0}, dias: [], ult: []}; retroBusy = false; render(); });
+  }
+  if (!retro) return head + `<div class="box"><div class="thinking"><span class="dots"><i></i><i></i><i></i></span> Somando os bilhetes…</div></div>` + credit;
+  const temDia = retro.ult && retro.ult.length;
+  const botoes = `<div style="padding:0 16px">
+    ${temDia ? `<button class="pf-bt" id="rt-img" onclick="window.palImagemDia(this)">${ICONE_SHR}Imagem do resultado do dia</button>` : ""}
+    ${window.palIsAdmin ? `<button class="pf-bt" id="rt-conf" onclick="window.palConferirAgora(this)">Conferir os bilhetes agora</button>` : ""}</div>`;
+  return head + retroCorpo(retro) + botoes + credit;
+}
+function retroCorpo(R) {
+  const t = R.total || {g: 0, r: 0}, n = t.g + t.r;
+  if (!n) return `<div class="empty">Ainda não tem bilhete conferido.<br>O retrospecto aparece quando os primeiros dias fecharem.</div>`;
+  const pct = Math.round(t.g / n * 100);
+  const max = Math.max(1, ...R.dias.map(d => d.g + d.r));
+  return `<div class="box fade retro">
+      <div class="rt-n"><b style="color:var(--green)">${t.g}</b><span>green</span><em>·</em><b style="color:var(--red)">${t.r}</b><span>red</span></div>
+      <div class="rt-pct"><div class="rt-bar"><i style="width:${pct}%"></i></div><b>${pct}%</b></div>
+      <p class="note" style="text-align:center;margin-top:2px">${n} bilhete${n > 1 ? "s" : ""} conferido${n > 1 ? "s" : ""} pelo placar final.</p>
+      ${R.dias.length > 1 ? `<div class="rt-dias">${R.dias.map(d => `<div class="rt-d" title="${esc(d.d)}">
+        <div class="rt-col"><i class="g" style="height:${d.g / max * 100}%"></i><i class="r" style="height:${d.r / max * 100}%"></i></div>
+        <span>${esc(d.d.slice(8))}/${esc(d.d.slice(5, 7))}</span></div>`).join("")}</div>` : ""}
+    </div>
+    <div class="ready-wrap"><div class="ready-title">Últimos bilhetes</div>
+    ${R.ult.map(b => `<div class="ready fade"><div class="ready-head">
+        <span class="ready-tag" style="background:${b.resultado === "green" ? "var(--green)" : "var(--red)"};color:#0b0e12">${b.resultado === "green" ? "GREEN" : "RED"}</span>
+        <span class="ready-odd">${esc(b.date.split("-").reverse().slice(0, 2).join("/"))}${b.odd ? " · Odd " + esc(b.odd) : ""}</span></div>
+      ${b.sel.map(x => `<div class="ready-sel"><div class="g">${x.ok ? "✓" : "✕"} ${esc(x.jogo)}</div><div class="m" style="color:${x.ok ? "var(--green)" : "var(--red)"}">${esc(x.mercado)}</div></div>`).join("")}
+      </div>`).join("")}
+    <p class="ready-note">Conferido pelo placar final de cada jogo. Resultado passado não garante o próximo.</p></div>`;
+}
+
+
+/* ---------- itens 27 a 30: avisos no celular ----------
+   A permissão não é pedida de cara: primeiro a gente explica para que serve
+   e só pede se a pessoa disser que quer. Permissão negada não volta atrás. */
+const AVKEY = "pal-avisos-nao";
+const ehiOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
+function convitePush() {
+  const P = window.palPush;
+  if (!P || !P.pode || !P.pode()) {
+    // No iPhone os avisos só existem com o app instalado na tela de início.
+    if (ehiOS() && !isStandalone && canInstall) return `<div class="push fade">
+      <div class="push-t"><b>Quer ser avisado dos bilhetes?</b>
+        <span>No iPhone, os avisos só funcionam com o app instalado na tela de início.</span></div>
+      <button class="gen" onclick="window.palInstall&&window.palInstall()">Instalar o app</button></div>`;
+    return "";
+  }
+  if (P.estado() !== "default") return "";
+  let nao = ""; try { nao = localStorage.getItem(AVKEY) || ""; } catch (e) {}
+  if (nao === "1") return "";
+  return `<div class="push fade">
+    <div class="push-t"><b>Te aviso quando sair o bilhete?</b>
+      <span>Um toque por dia, no máximo: bilhete do dia, lembrete antes do jogo e o resultado. Dá para desligar quando quiser.</span></div>
+    <div class="push-b"><button class="gen" onclick="window.palQueroAvisos(this)">Quero ser avisado</button>
+      <button class="push-n" onclick="window.palAgoraNao()">Agora não</button></div></div>`;
+}
+window.palAgoraNao = () => { store(AVKEY, "1"); render(); };
+window.palQueroAvisos = async el => {
+  if (el) { el.disabled = true; el.textContent = "Um instante…"; }
+  const r = await (window.palPush ? window.palPush.pedir() : Promise.resolve("nao"));
+  store(AVKEY, "1");
+  if (r === "granted") toast("Pronto! Vou te avisar.");
+  else if (r === "denied") toast("O celular bloqueou os avisos. Dá para liberar nas configurações do navegador.");
+  render();
+};
+window.palDesligarAvisos = async el => {
+  if (el) el.disabled = true;
+  await (window.palPush ? window.palPush.desligar() : Promise.resolve());
+  toast("Avisos desligados");
+  render();
+};
+// Aviso que chega com o app aberto: aparece como um cartão, não como notificação.
+window.palAviso = (titulo, texto, url) => {
+  const el = document.createElement("div");
+  el.className = "aviso-in";
+  el.innerHTML = `<img src="icon-192.png?v=3" alt=""><div><b></b><span></span></div>`;
+  el.querySelector("b").textContent = titulo || "Palpiteiro";
+  el.querySelector("span").textContent = texto || "";
+  if (url) el.onclick = () => { location.hash = String(url).replace(/^.*#/, ""); el.remove(); };
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("on"));
+  setTimeout(() => { el.classList.remove("on"); setTimeout(() => el.remove(), 400); }, 6000);
 };
 
 const AUTOKEY = "pal-autogera";
@@ -817,6 +1555,7 @@ function riscoNome(nome, odd) {
   return RISCOS.find(r => r.lbl.toLowerCase() === String(alvo).trim().toLowerCase()) || riscoOdd(odd);
 }
 const rskTag = (r, cls) => `<span class="rsk ${cls || ""}" style="color:${r.c};background:${r.c}1f"><i></i>${r.lbl}</span>`;
+const ICONE_SHR = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/></svg>`;
 const LEGENDA = `<div class="risco-leg"><span>Do mais seguro ao mais arriscado:</span>${RISCOS.map(r => `<b style="background:${r.c}" title="${r.lbl}"></b>`).join("")}</div>`;
 // chance de o bilhete inteiro bater: as confianças se multiplicam
 const chanceBilhete = list => Math.round(list.reduce((a, s) => a * (s.conf / 100), 1) * 100);
@@ -1133,7 +1872,7 @@ function picks(m, H, A, h2h, table) {
   const tab = (tb, nome) => tb ? ` Na tabela, ${nome} está em ${tb.pos}º com ${tb.ppg.toFixed(1)} pontos por jogo.` : "";
 
   const fh = forca(h, th), fa = forca(a, ta), d = fh - fa;
-  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(88, Math.round(score))), why});
+  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(88, Math.round(score + ajusteDe(mk)))), why});
 
   if (o >= .6) add("Mais de 2.5 gols", 40 + o * 50, `Mais de 2.5 gols em ${h.cnt.o25} dos ${ondeH} do ${hn} e ${a.cnt.o25} dos ${ondeA} do ${an}.` + txtO);
   if (o <= .4) add("Menos de 2.5 gols", 40 + (1 - o) * 50, `Menos de 2.5 gols em ${h.cnt.n - h.cnt.o25} dos ${ondeH} do ${hn} e ${a.cnt.n - a.cnt.o25} dos ${ondeA} do ${an}.` + txtU);
@@ -1215,7 +1954,7 @@ function picksExtras(m, A) {
   const ch = A.cards && A.cards.h, ca = A.cards && A.cards.a;
   /* Teto mais baixo que os mercados principais: cartões e primeiro tempo são
      apostas de apoio, não devem roubar o lugar do palpite do jogo. */
-  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(82, Math.round(score))), why, extra: true});
+  const add = (mk, score, why) => P.push({mk, conf: Math.max(52, Math.min(82, Math.round(score + ajusteDe(mk)))), why, extra: true});
   if (ch && ca && ch.n >= 3 && ca.n >= 3) {
     const med = (ch.tot + ca.tot) / 2;   // média de cartões por jogo, contando os dois lados
     if (med >= 5.2) add("Mais de 4.5 cartões", 42 + Math.min(med - 4.5, 3) * 13,
@@ -1313,7 +2052,10 @@ async function homeView() {
   if (homeTab === "palpites") {
     const r = readyView();
     talvezGerarSozinho();
-    return `<div class="top">${head}</div>` + cardZe() + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + credit;
+    conferirBilhetes().then(m => { if (m) { retro = null; if (location.hash.slice(1) === "retro") render(); } }).catch(() => {});
+    calibrarMotor().catch(() => {});
+    const linkRetro = `<div style="padding:0 16px 4px"><button class="pf-bt" onclick="go('retro')">Ver o retrospecto: quantos deram green</button></div>`;
+    return `<div class="top">${head}</div>` + convitePush() + cardZe() + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + linkRetro + credit;
   }
   const top = `<div class="top">${head}
     <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
@@ -1448,7 +2190,7 @@ async function detailView(id) {
       <div style="padding:0 16px"><button class="gen" onclick="tab='ia';render()">Ver palpites do Palpiteiro</button></div>`;
   } else if (tab === "ia") {
     body = `<div class="box fade"><div class="iahead"><span class="pulse"></span><b>Palpites do Palpiteiro</b></div>
-      <p class="aviso-conf">A porcentagem é a <b>confiança do nosso cálculo</b> nos últimos resultados — não é a chance real de acontecer, nem promessa de green.</p>${avisoDesfalques(m, A)}`;
+      <p class="aviso-conf">A porcentagem é a <b>confiança do nosso cálculo</b> nos últimos resultados — não é a chance real de acontecer, nem promessa de green.${avisoCalibragem(A)}</p>${avisoDesfalques(m, A)}`;
     if (!A.picks.length) {
       const sd = semDados(A.H, A.A);
       body += sd
@@ -1596,6 +2338,12 @@ function perfilView() {
     <p class="note" style="margin:10px 16px">Esses dados são só para consulta e não podem ser alterados aqui.<br>Para corrigir alguma coisa ou apagar seu cadastro, fale com um administrador.</p>
     <div style="padding:0 16px">
       ${favs ? `<button class="pf-bt" onclick="go('times')">Meus times favoritos</button>` : ""}
+      ${(() => { const P = window.palPush;
+        if (!P || !P.pode || !P.pode()) return ehiOS() ? `<div class="pf-nota">Para receber avisos no iPhone, instale o app na tela de início.</div>` : "";
+        if (P.ligado()) return `<button class="pf-bt" onclick="window.palDesligarAvisos(this)">Desligar os avisos no celular</button>`;
+        if (P.estado() === "denied") return `<div class="pf-nota">Os avisos estão bloqueados para este site. Dá para liberar nas configurações do navegador.</div>`;
+        return `<button class="pf-bt" onclick="window.palQueroAvisos(this)">Receber avisos no celular</button>`; })()}
+      <button class="pf-bt" onclick="go('retro')">Retrospecto dos bilhetes</button>
       <a class="pf-bt tk" href="${TIKTOK}" target="_blank" rel="noopener">${ICONE_TK}Seguir o Zé Tabela no TikTok</a>
       ${canInstall ? `<button class="pf-bt inst" onclick="window.palInstall&&window.palInstall()">Instalar o app no celular</button>` : ""}
       <a class="pf-bt" href="termos/">Termos de uso e privacidade</a>
@@ -1719,6 +2467,7 @@ async function render(keepFocus, quiet) {
     else if (h === "times") html = await timesView();
     else if (h === "bolao") html = await bolaoView();
     else if (h === "perfil") html = perfilView();
+    else if (h === "retro") html = await retroView();
     else html = await homeView();
   } catch (e) {
     console.error("Palpiteiro render", e);
@@ -1838,6 +2587,6 @@ function gateFail() {
 }
 window.gateFail = gateFail;
 </script>
-<script type="module" src="gate.js?v=8" onerror="gateFail()"></script>
+<script type="module" src="gate.js?v=10" onerror="gateFail()"></script>
 </body>
 </html>

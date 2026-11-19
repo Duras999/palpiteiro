@@ -13,3 +13,7 @@ export const firebaseConfig = {
 export const ADMINS = ["jorgeluizsilvasiqueira@gmail.com"];
 
 export const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
+
+// Chave pública das notificações (gerada no Firebase, em Cloud Messaging).
+// É pública de propósito: vai dentro do app para o celular se inscrever.
+export const VAPID = "BL_RaPtnrghVeUEv1Dckka4VDZw6mAGdaVS9o4GZFDeQLseMv8577a0iSKqf8SKVHa2t_CZwhe7zfPrRP4RtfBE";

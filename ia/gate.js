@@ -1,6 +1,6 @@
 // Portão de entrada do Palpiteiro: login (Google ou e-mail + senha),
 // pedido de acesso com aprovação manual, registro de uso e bilhetes do dia.
-import { firebaseConfig, SDK, ADMINS } from "./firebase-config.js";
+import { firebaseConfig, SDK, ADMINS, VAPID } from "./firebase-config.js";
 
 const ready = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("COLE");
 window.track = () => {};
@@ -271,7 +271,7 @@ async function start() {
     if (unsubBan) { unsubBan(); unsubBan = null; }
     window.palBanner = null;
     if (beat) { clearInterval(beat); beat = null; }
-    window.palCasas = null; window.palCalibra = null;
+    window.palCasas = null; window.palCalibra = null; window.palHist = null; window.palPush = null; window.palAjuste = null;
     window.palSave = null; window.palBolao = null; window.palOut = null; window.palStreak = 0;
     window.palIsAdmin = false; window.palSalvarBilhetes = null; window.palClick = null;
     document.body.classList.add("locked");
@@ -402,8 +402,84 @@ async function start() {
         return s ? s.docs.map(d => ({id: d.id, ...d.data()})) : [];
       },
       resolver: (id, placar, acertos) => F.updateDoc(F.doc(db, "calibra", calId(id)),
-        {placar, acertos, avaliado: true, updatedAt: F.serverTimestamp()}).catch(() => {})
+        {placar, acertos, avaliado: true, updatedAt: F.serverTimestamp()}).catch(() => {}),
+      // tudo o que já foi medido, para o motor se corrigir sozinho (item 9)
+      medidos: async desde => {
+        const q = F.query(F.collection(db, "calibra"), F.where("avaliado", "==", true), F.where("dia", ">=", desde));
+        const s = await F.getDocs(q).catch(() => null);
+        return s ? s.docs.map(d => d.data()) : [];
+      },
+      salvarAjuste: obj => F.setDoc(F.doc(db, "config", "calibragem"),
+        {...obj, atualizadoEm: F.serverTimestamp()}).catch(e => { console.warn("Palpiteiro calibragem", e && e.code); })
     };
+    // correção que o motor aprendeu sozinho; uma leitura por sessão
+    F.getDoc(F.doc(db, "config", "calibragem")).then(c => {
+      window.palAjuste = c.exists() ? (c.data().ajustes || null) : null;
+      window.palRender && window.palRender();
+    }).catch(() => {});
+    /* Histórico de acertos dos bilhetes: o administrador confere os dias
+       passados pelo próprio app e o resumo vira uma página que qualquer
+       um abre, sem cadastro. */
+    window.palHist = {
+      passados: async desde => {
+        const q = F.query(F.collection(db, "tickets"), F.where("date", ">=", desde));
+        const s = await F.getDocs(q).catch(() => null);
+        return s ? s.docs.map(d => ({id: d.id, ...d.data()})) : [];
+      },
+      marcar: (id, dados) => F.updateDoc(F.doc(db, "tickets", String(id)),
+        {...dados, conferidoEm: F.serverTimestamp()}).catch(e => { console.warn("Palpiteiro conferir", e && e.code); }),
+      publicar: resumo => F.setDoc(F.doc(db, "config", "publico"),
+        {...resumo, atualizadoEm: F.serverTimestamp()}).catch(e => { console.warn("Palpiteiro publicar", e && e.code); }),
+      publico: async () => { const s = await F.getDoc(F.doc(db, "config", "publico")).catch(() => null); return s && s.exists() ? s.data() : null; }
+    };
+    /* Avisos no celular (itens 27 a 30). A permissão só é pedida quando a
+       pessoa toca em sim; aqui a gente só guarda o endereço do aparelho
+       para o Palpiteiro conseguir mandar o aviso depois. */
+    const podePush = () => "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+    let msgPronto = null;
+    const ligarMensagens = async () => {
+      if (!podePush()) return null;
+      if (!msgPronto) msgPronto = (async () => {
+        const M = await import(`${SDK}/firebase-messaging.js`);
+        if (!(await M.isSupported().catch(() => false))) return null;
+        const reg = await navigator.serviceWorker.register("firebase-messaging-sw.js").catch(() => null);
+        if (!reg) return null;
+        return {M, msg: M.getMessaging(app), reg};
+      })().catch(() => null);
+      return msgPronto;
+    };
+    const guardarToken = async () => {
+      if (Notification.permission !== "granted") return null;
+      const m = await ligarMensagens();
+      if (!m) return null;
+      const token = await m.M.getToken(m.msg, {vapidKey: VAPID, serviceWorkerRegistration: m.reg}).catch(() => null);
+      if (!token) return null;
+      await F.updateDoc(ref, {push: {token, quando: Date.now(), app: isStandalonePWA()}}).catch(() => {});
+      m.M.onMessage(m.msg, p => {
+        const dd = (p && p.data) || {};
+        window.palAviso && window.palAviso(dd.titulo || "Palpiteiro", dd.texto || "", dd.url || "");
+      });
+      return token;
+    };
+    const isStandalonePWA = () => matchMedia("(display-mode: standalone)").matches || !!navigator.standalone;
+    let avisosOn = !!(d.avisos && d.avisos.on);
+    window.palPush = {
+      pode: podePush,
+      estado: () => podePush() ? Notification.permission : "nao",
+      ligado: () => podePush() && Notification.permission === "granted" && avisosOn,
+      pedir: async () => {
+        if (!podePush()) return "nao";
+        let perm = Notification.permission;
+        if (perm === "default") perm = await Notification.requestPermission().catch(() => "denied");
+        if (perm !== "granted") return perm;
+        avisosOn = true;
+        await F.updateDoc(ref, {avisos: {on: true, quando: Date.now()}}).catch(() => {});
+        await guardarToken();
+        return "granted";
+      },
+      desligar: async () => { avisosOn = false; await F.updateDoc(ref, {avisos: {on: false, quando: Date.now()}}).catch(() => {}); }
+    };
+    if (d.avisos && d.avisos.on) guardarToken().catch(() => {});
     window.palLoadCloud && window.palLoadCloud(d);
     window.dispatchEvent(new Event("resize"));
   };
