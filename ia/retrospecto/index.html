@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Retrospecto · Palpiteiro</title>
+<meta name="description" content="Quantos bilhetes do Palpiteiro deram green e quantos deram red, conferidos pelo placar final de cada jogo.">
+<meta name="theme-color" content="#0b0e12">
+<link rel="canonical" href="https://opalpiteiro.online/retrospecto/">
+<link rel="icon" type="image/png" href="../icon-192.png?v=3">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png?v=3">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Palpiteiro">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://opalpiteiro.online/retrospecto/">
+<meta property="og:title" content="Retrospecto do Palpiteiro — quantos deram green">
+<meta property="og:description" content="Todos os bilhetes conferidos pelo placar final. Os green e os red, sem esconder nada.">
+<meta property="og:image" content="https://opalpiteiro.online/preview.png?v=1">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root{--bg:#0b0e12;--card:#161b21;--card2:#1d242c;--line:#252d36;--txt:#eef2f6;--mut:#8a96a3;--green:#19e07a;--red:#ff5a5a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+       line-height:1.55;-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top) 0 50px}
+  .wrap{max-width:560px;margin:0 auto;padding:22px 16px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+  .brand img{width:40px;height:40px;border-radius:12px}
+  .brand h1{font-size:21px;font-weight:800;letter-spacing:-.3px}
+  .brand h1 span{color:var(--green)}
+  .brand small{display:block;font-size:12.5px;color:var(--mut);font-weight:500}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 16px;margin-bottom:14px}
+  .n{display:flex;align-items:baseline;justify-content:center;gap:8px;font-size:15px;color:var(--mut)}
+  .n b{font-size:42px;font-weight:800;letter-spacing:-1.2px}
+  .n em{font-style:normal;opacity:.4;margin:0 4px}
+  .pct{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+  .pct b{font-size:16px;font-weight:800;width:48px;text-align:right}
+  .bar{flex:1;height:12px;border-radius:99px;background:rgba(255,90,90,.35);overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+  .sub{color:var(--mut);font-size:12.5px;text-align:center}
+  .dias{display:flex;gap:6px;justify-content:space-between;margin-top:18px;overflow-x:auto;padding-bottom:4px}
+  .d{flex:1 0 24px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .d span{font-size:10px;color:var(--mut);white-space:nowrap}
+  .col{height:56px;width:14px;display:flex;flex-direction:column-reverse;gap:2px}
+  .col i{display:block;width:100%;border-radius:3px;min-height:2px}
+  .col i.g{background:var(--green)} .col i.r{background:var(--red)}
+  h2{font-size:14px;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin:22px 0 10px}
+  .bil{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 14px 12px;margin-bottom:10px}
+  .bh{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .tag{font-size:11.5px;font-weight:800;letter-spacing:.5px;border-radius:99px;padding:4px 11px;color:#0b0e12}
+  .odd{font-size:13px;color:var(--mut);font-weight:600}
+  .sel{padding:7px 0;border-top:1px solid var(--line)}
+  .sel:first-of-type{border-top:0}
+  .sel .j{font-size:12.5px;color:var(--mut)}
+  .sel .m{font-size:15px;font-weight:700;margin-top:1px}
+  .vazio{text-align:center;color:var(--mut);padding:30px 10px;font-size:15px}
+  .cta{display:block;text-align:center;margin:22px 0 6px;padding:15px;border-radius:16px;
+       background:linear-gradient(135deg,var(--green),#0fb862);color:#04210f;font-weight:800;text-decoration:none;font-size:16px}
+  footer{margin-top:24px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px;text-align:center;line-height:1.6}
+  footer a{color:#5f6b77}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><img src="../icon-192.png?v=3" alt=""><h1>Palpi<span>teiro</span><small>Retrospecto dos bilhetes</small></h1></div>
+  <div id="conteudo"><div class="vazio">Carregando…</div></div>
+  <a class="cta" href="../">Abrir o Palpiteiro</a>
+  <footer>
+    Conferido pelo placar final de cada jogo, sem escolher o que mostrar.<br>
+    O Palpiteiro faz análise estatística e não garante resultado.<br>
+    +18 · Aposte com responsabilidade. <a href="../termos/#responsabilidade">Termos e jogo responsável</a>
+  </footer>
+</div>
+<script type="module">
+import { firebaseConfig, SDK } from "../firebase-config.js";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const el = document.getElementById("conteudo");
+const vazio = t => { el.innerHTML = `<div class="vazio">${esc(t)}</div>`; };
+try {
+  const [{ initializeApp }, F] = await Promise.all([
+    import(`${SDK}/firebase-app.js`), import(`${SDK}/firebase-firestore.js`)
+  ]);
+  const db = F.getFirestore(initializeApp(firebaseConfig));
+  const snap = await F.getDoc(F.doc(db, "config", "publico"));
+  const R = snap.exists() ? snap.data() : null;
+  const t = (R && R.total) || {g: 0, r: 0}, n = (+t.g || 0) + (+t.r || 0);
+  if (!n) { vazio("O retrospecto aparece aqui assim que os primeiros bilhetes fecharem."); }
+  else {
+    const pct = Math.round(t.g / n * 100);
+    const dias = (R.dias || []).filter(d => d && d.d);
+    const max = Math.max(1, ...dias.map(d => (+d.g || 0) + (+d.r || 0)));
+    const ult = (R.ult || []).filter(b => b && b.date);
+    el.innerHTML = `<div class="box">
+        <div class="n"><b style="color:var(--green)">${t.g}</b><span>green</span><em>·</em><b style="color:var(--red)">${t.r}</b><span>red</span></div>
+        <div class="pct"><div class="bar"><i style="width:${pct}%"></i></div><b>${pct}%</b></div>
+        <p class="sub">${n} bilhete${n > 1 ? "s" : ""} conferido${n > 1 ? "s" : ""} pelo placar final.</p>
+        ${dias.length > 1 ? `<div class="dias">${dias.map(d => `<div class="d" title="${esc(d.d)}">
+          <div class="col"><i class="g" style="height:${(+d.g || 0) / max * 100}%"></i><i class="r" style="height:${(+d.r || 0) / max * 100}%"></i></div>
+          <span>${esc(String(d.d).slice(8))}/${esc(String(d.d).slice(5, 7))}</span></div>`).join("")}</div>` : ""}
+      </div>
+      ${ult.length ? `<h2>Últimos bilhetes</h2>` + ult.map(b => `<div class="bil"><div class="bh">
+          <span class="tag" style="background:${b.resultado === "green" ? "var(--green)" : "var(--red)"}">${b.resultado === "green" ? "GREEN" : "RED"}</span>
+          <span class="odd">${esc(String(b.date).split("-").reverse().slice(0, 2).join("/"))}${b.odd ? " · Odd " + esc(b.odd) : ""}</span></div>
+        ${(b.sel || []).map(x => `<div class="sel"><div class="j">${x.ok ? "✓" : "✕"} ${esc(x.jogo)}</div>
+          <div class="m" style="color:${x.ok ? "var(--green)" : "var(--red)"}">${esc(x.mercado)}</div></div>`).join("")}
+        </div>`).join("") : ""}`;
+  }
+} catch (e) {
+  console.warn("Palpiteiro retrospecto", e && e.code);
+  vazio("Não deu para carregar o retrospecto agora. Tenta de novo daqui a pouco.");
+}
+</script>
+</body>
+</html>
