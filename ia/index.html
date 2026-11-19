@@ -2426,6 +2426,134 @@ async function bolaoView() {
   return html + `<p class="note">${ganhos ? `Você fez <b style="color:var(--green)">${ganhos} ponto${ganhos > 1 ? "s" : ""}</b> hoje.<br>` : ""}Palpite antes do jogo começar. Placar exato vale 5 pontos, acertar quem ganha vale 2.<br>Isso aqui é brincadeira, não é aposta.</p>`;
 }
 
+
+/* ---------- imagem do bilhete que a própria pessoa montou ----------
+   Em cima: o QR do app na esquerda, o logo no centro e a direita vazia
+   de propósito, para o Jorge colocar o que quiser depois. Embaixo, as
+   seleções e o aviso de que é análise, não promessa. */
+let logoPronto = null;
+function carregarLogo() {
+  if (logoPronto) return logoPronto;
+  logoPronto = new Promise(ok => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = () => ok(null);
+    i.src = "icon-192.png?v=3";
+  });
+  return logoPronto;
+}
+function imagemDoMeuBilhete(lista, logo) {
+  const W = 1080, H = 1350, P = 72;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const x = c.getContext("2d");
+  const FT = '-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif';
+  const g = x.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, "#0d1217"); g.addColorStop(1, "#070a0d");
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const br = x.createRadialGradient(540, 180, 0, 540, 180, 620);
+  br.addColorStop(0, "rgba(25,224,122,.16)"); br.addColorStop(1, "rgba(25,224,122,0)");
+  x.fillStyle = br; x.fillRect(0, 0, W, H);
+
+  // esquerda: QR do app
+  const qs = 180;
+  desenhaQr(x, "https://opalpiteiro.online/", P, P, qs);
+
+  // centro: o logo do app
+  const ls = 104, lx = (W - ls) / 2, ly = P + 2;
+  if (logo) {
+    x.save();
+    x.beginPath();
+    if (x.roundRect) x.roundRect(lx, ly, ls, ls, 30); else x.rect(lx, ly, ls, ls);
+    x.clip();
+    x.drawImage(logo, lx, ly, ls, ls);
+    x.restore();
+  } else {
+    const lg = x.createLinearGradient(lx, ly, lx + ls, ly + ls);
+    lg.addColorStop(0, "#19e07a"); lg.addColorStop(1, "#0a8f4c");
+    x.fillStyle = lg; x.beginPath();
+    if (x.roundRect) x.roundRect(lx, ly, ls, ls, 30); else x.rect(lx, ly, ls, ls);
+    x.fill();
+    x.fillStyle = "#04210f"; x.font = "800 62px " + FT;
+    x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillText("P", lx + ls / 2, ly + ls / 2 + 2);
+    x.textBaseline = "alphabetic";
+  }
+  x.textAlign = "center";
+  x.font = "800 46px " + FT;
+  const t1 = "Palpi", t2 = "teiro";
+  const w1 = x.measureText(t1).width, w2 = x.measureText(t2).width;
+  const tx = (W - (w1 + w2)) / 2;
+  x.textAlign = "left";
+  x.fillStyle = "#eef2f6"; x.fillText(t1, tx, ly + ls + 48);
+  x.fillStyle = "#19e07a"; x.fillText(t2, tx + w1, ly + ls + 48);
+
+  // a direita de cima fica vazia de propósito
+
+  // as seleções
+  let y = P + qs + 90;
+  const fim = H - 210;
+  const n = Math.min(lista.length, 8);
+  const teto = n === 1 ? 300 : n === 2 ? 230 : 170;
+  const alt = Math.min(teto, Math.max(92, (fim - y) / Math.max(n, 1)));
+  y += Math.max(0, (fim - y - alt * n) / 2);
+  const fJogo = n <= 2 ? 34 : 29, fMerc = n === 1 ? 58 : n === 2 ? 46 : n <= 4 ? 40 : 34;
+  const corta = (t, max, fonte) => { x.font = fonte; let v = String(t);
+    while (x.measureText(v).width > max && v.length > 4) v = v.slice(0, -2);
+    return v === String(t) ? v : v + "…"; };
+  x.textAlign = "left";
+  lista.slice(0, 8).forEach((sl, i) => {
+    const top = y + i * alt;
+    x.fillStyle = "#11171d"; x.beginPath();
+    if (x.roundRect) x.roundRect(P, top, W - P * 2, alt - 14, 22); else x.rect(P, top, W - P * 2, alt - 14);
+    x.fill();
+    x.fillStyle = "#19e07a"; x.fillRect(P, top + 18, 6, Math.max(24, alt - 50));
+    const meio = top + (alt - 14) / 2;
+    const fj = "600 " + fJogo + "px " + FT, fm = "800 " + fMerc + "px " + FT;
+    x.fillStyle = "#8a96a3"; x.font = fj;
+    x.fillText(corta(sl.jogo, W - P * 2 - 70, fj), P + 28, meio - 14);
+    x.fillStyle = "#eef2f6"; x.font = fm;
+    x.fillText(corta(sl.mercado, W - P * 2 - 70, fm), P + 28, meio + fMerc * .72);
+  });
+
+  // aviso embaixo
+  const ay = H - 140;
+  x.fillStyle = "#11171d"; x.beginPath();
+  if (x.roundRect) x.roundRect(P, ay, W - P * 2, 104, 22); else x.rect(P, ay, W - P * 2, 104);
+  x.fill();
+  x.fillStyle = "#6b7682"; x.font = "500 26px " + FT; x.textAlign = "center";
+  AVISO_IMG.forEach((t, i) => x.fillText(t, W / 2, ay + 42 + i * 36));
+  return c;
+}
+window.palImagemMeuBilhete = async el => {
+  if (!slip.length) return toast("Seu bilhete está vazio");
+  const antes = el ? el.textContent : "";
+  if (el) { el.disabled = true; el.textContent = "Montando…"; }
+  try {
+    try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch (e) {}
+    const logo = await carregarLogo();
+    const lista = slip.map(sl => ({jogo: short(sl.h) + " x " + short(sl.a) + " · " + whenLabel(sl), mercado: sl.mk}));
+    const c = imagemDoMeuBilhete(lista, logo);
+    const blob = await new Promise(ok => c.toBlob(ok, "image/png"));
+    if (!blob) throw new Error("sem imagem");
+    const nome = "meu-bilhete-" + dayOf(0) + ".png";
+    const arq = new File([blob], nome, {type: "image/png"});
+    const texto = "Meu bilhete no Palpiteiro · opalpiteiro.online";
+    if (navigator.canShare && navigator.canShare({files: [arq]})) await navigator.share({files: [arq], text: texto});
+    else {
+      const u = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(u), 4000);
+      toast("Imagem salva no seu celular");
+    }
+    window.track && window.track("tickets");
+  } catch (e) {
+    if (!/AbortError/.test(String(e && e.name))) toast("Não deu para montar a imagem");
+  }
+  if (el) { el.disabled = false; el.textContent = antes; }
+};
+
 function slipView() {
   let html = `<div class="top"><div class="brand"><button class="home-btn" onclick="goHome()" aria-label="Início"><img class="logo" src="icon-192.png?v=3" alt="Palpiteiro"></button><h1>Meu <span>bilhete</span></h1></div></div><div class="box fade">`;
   if (!slip.length) html += `<div class="empty">Seu bilhete está vazio.<br>Abra um jogo, toque em <b style="color:var(--green)">Palpites do Palpiteiro</b> e adicione as seleções.</div>`;
@@ -2438,9 +2566,10 @@ function slipView() {
     const ch = chanceBilhete(slip), rb = risco(ch);
     html += `<div class="total"><span>${slip.length} seleç${slip.length > 1 ? "ões" : "ão"}</span><span>Confiança média <b style="color:${risco(avg).c}">${avg}%</b></span></div>
       <div class="slip-rsk">${rskTag(rb, "rsk-big")}<div class="ch">Chance de bater tudo<b style="color:${rb.c}">${ch}%</b></div></div>
-      <a class="gen" style="margin-top:14px;display:block;text-align:center;text-decoration:none" href="https://a.bingoem.casa/t/NTk2OTEwXzM=" target="_blank" rel="noopener" onclick="copySlip(true);window.track&&window.track('bets')">Apostar</a>`;
+      <button class="gen" style="margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%"
+        onclick="window.palImagemMeuBilhete(this)">${ICONE_SHR}Gerar imagem do bilhete</button>`;
   }
-  return html + (slip.length ? LEGENDA : "") + `</div><p class="note">Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
+  return html + (slip.length ? LEGENDA : "") + `</div><p class="note">${slip.length ? "A imagem sai pronta para mandar no grupo ou postar.<br>" : ""}Quanto mais seleções, menor a chance de o bilhete inteiro bater.<br>+18 · Aposte com responsabilidade.</p>` + acct();
 }
 function toggle(id, mk, conf) {
   const i = slip.findIndex(s => s.id === id && s.mk === mk);
