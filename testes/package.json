@@ -1,0 +1,7 @@
+{
+  "name": "palpiteiro-testes",
+  "private": true,
+  "description": "Testes do Palpiteiro: abrem o app num navegador de verdade, com o Firebase e a API de jogos simulados.",
+  "scripts": { "test": "node rodar.js" },
+  "devDependencies": { "playwright": "1.63.0" }
+}
