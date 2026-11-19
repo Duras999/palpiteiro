@@ -1,0 +1,6 @@
+name = "palpiteiro-api"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# A chave NÃO fica aqui. Ela é guardada com:
+#   npx wrangler secret put API_FOOTBALL_KEY
