@@ -90,6 +90,76 @@ const LEITOR = fs.readFileSync(path.join(__dirname, "qr", "ler.js"), "utf8")
   ok(grande.w === 1080 && grande.h === 1350, "bilhete de 9 jogos continua cabendo na mesma imagem");
 
   await p.context().close();
+  /* ---------- a aba Meu bilhete: um botão só, que vira imagem ---------- */
+  const slip = [
+    {id: "fla-vas", mk: "Vitória do Flamengo", conf: 74, h: "Flamengo", a: "Vasco da Gama", hl: "", t: new Date(Date.now() + 9 * 3600000).toISOString()},
+    {id: "ars-che", mk: "Mais de 2.5 gols", conf: 66, h: "Arsenal", a: "Chelsea", hl: "", t: new Date(Date.now() + 8 * 3600000).toISOString()},
+    {id: "gre-int", mk: "Ambas marcam: Sim", conf: 61, h: "Gremio", a: "Internacional", hl: "", t: new Date(Date.now() + 7 * 3600000).toISOString()}
+  ];
+  const q = await ctx(browser, {}, `
+    window.__user={uid:"u1",email:"ana@teste.local",displayName:"Ana",providerData:[]};
+    window.__db={"users/u1":{status:"approved",name:"Ana",opens:3}};
+    try{localStorage.setItem("pal-favs","[]");localStorage.setItem("iag-slip2",${JSON.stringify(JSON.stringify(slip))});}catch(e){}`);
+  await q.goto(URL + "#bilhete"); await q.waitForSelector(".slip-item", {timeout: 10000});
+  const bts = await q.$$eval(".box .gen", e => e.map(x => x.textContent.trim()));
+  ok(bts.length === 1 && bts[0] === "Compartilhar palpite", "a aba Meu bilhete tem um botão só: " + bts.join(" | "));
+  ok(!/Apostar/.test(await q.innerText("#app")), "o botão Apostar saiu da aba Meu bilhete");
+  ok(await q.locator(".slip-item").count() === 3, "as três seleções continuam listadas");
+
+  const mb = await q.evaluate(async () => {
+    const logo = await carregarLogo();
+    const lista = slip.map(s => ({jogo: short(s.h) + " x " + short(s.a), mercado: s.mk, conf: s.conf}));
+    const resumo = {n: slip.length, media: 67, chance: 30};
+    const c = imagemDoMeuBilhete(lista, logo, resumo);
+    const x = c.getContext("2d");
+    const pt = (px, py) => { const d = x.getImageData(px, py, 6, 6).data; return {r: d[0], g: d[1], b: d[2]}; };
+    const W_ = c.width;
+    return {w: c.width, h: c.height, temLogo: !!logo,
+            qrEsquerda: pt(160, 80), qrDireita: pt(W_ - 160, 80)};
+  });
+  ok(mb.w === 1080 && mb.h === 1350, "imagem do meu bilhete no mesmo formato de postar");
+  ok(mb.temLogo, "usa o logo de verdade do app, não um desenho");
+  ok(mb.qrEsquerda.r > 200 && mb.qrEsquerda.g > 200, "o QR do app fica na esquerda de cima");
+  ok(mb.qrDireita.r > 200 && mb.qrDireita.g > 200, "o QR da casa fica na direita de cima");
+
+  // os dois QR precisam apontar para os lugares certos
+  await q.evaluate(LEITOR);
+  const alvos = await q.evaluate(() => ({
+    app: window.__ler(qrMatriz("https://opalpiteiro.online/")).texto,
+    casa: window.__ler(qrMatriz(LINK_CASA)).texto,
+    linkCasa: LINK_CASA
+  }));
+  ok(alvos.app === "https://opalpiteiro.online/", "o QR da esquerda abre o app");
+  ok(alvos.casa === alvos.linkCasa && /b\.ingoem\.casa/.test(alvos.casa),
+    "o QR da direita abre o cadastro na casa: " + alvos.casa);
+  const legendas = await q.evaluate(async () => {
+    const logo = await carregarLogo();
+    const c = imagemDoMeuBilhete([{jogo: "A x B", mercado: "Teste"}], logo);
+    return c.width;
+  });
+  ok(legendas === 1080, "a imagem com os dois QR continua no mesmo tamanho");
+
+  // o risco de cada palpite e o resumo do bilhete entram mesmo na imagem
+  const comSem = await q.evaluate(async () => {
+    const logo = await carregarLogo();
+    const base = slip.map(s => ({jogo: short(s.h) + " x " + short(s.a), mercado: s.mk, conf: s.conf}));
+    const semConf = base.map(z => ({...z, conf: 0}));
+    const r = {n: 3, media: 67, chance: 30};
+    const png = (l, res) => imagemDoMeuBilhete(l, logo, res).toDataURL("image/png");
+    return {comRisco: png(base, r), semRisco: png(semConf, r), semResumo: png(base, null)};
+  });
+  ok(comSem.comRisco !== comSem.semRisco, "o selo de risco com a porcentagem aparece em cada palpite");
+  ok(comSem.comRisco !== comSem.semResumo, "a faixa de confiança média e chance aparece embaixo");
+
+  await q.evaluate(() => { delete navigator.canShare; });
+  const [arq] = await Promise.all([
+    q.waitForEvent("download", {timeout: 15000}),
+    q.locator(".box .gen").click()
+  ]);
+  ok(/^meu-bilhete-\d{4}-\d{2}-\d{2}\.png$/.test(arq.suggestedFilename()),
+    "baixa com o nome do dia: " + arq.suggestedFilename());
+  await q.context().close();
+
   console.log(errors.length ? "ERROS:\n" + [...new Set(errors)].join("\n") : "sem erros no console");
   await browser.close(); srv.close();
 })().catch(e => { console.error("TESTE QUEBROU", e.message.split("\n")[0], errors); process.exit(1); });
