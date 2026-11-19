@@ -1,0 +1,8 @@
+{
+  "name": "palpiteiro-rotina",
+  "private": true,
+  "type": "module",
+  "description": "Rotina que confere se o site está de pé e manda os avisos no celular.",
+  "scripts": { "start": "node diaria.js" },
+  "dependencies": { "firebase-admin": "13.6.0" }
+}
