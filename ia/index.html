@@ -383,6 +383,10 @@
        background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:14px;
        padding:0 14px;font-size:14px;font-weight:700;margin-top:10px}
   .dia .shr{margin-top:0}
+  .bt-video{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;
+            padding:13px;border-radius:14px;background:#fe2c55;color:#fff;font-weight:800;font-size:15px;text-decoration:none}
+  .bt-video:active{opacity:.75}
+  .bt-video svg{flex:0 0 auto}
   .shr:active{opacity:.7}
   .shr:disabled{opacity:.6}
   .shr svg{flex:0 0 auto}
@@ -884,7 +888,8 @@ function cardDoDia(b) {
     <div class="dia-m">${esc(s.mercado)}</div>
     <div class="bt-par"><a class="gen ready-btn" style="margin-top:0" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener"
        onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a>
-      ${btCompartilhar(b)}</div></div>`;
+      ${btCompartilhar(b)}</div>
+    <a class="bt-video" href="${TIKTOK}" target="_blank" rel="noopener">${ICONE_PLAY}Ver o vídeo deste palpite</a></div>`;
 }
 function readyView() {
   const today = new Date().toLocaleDateString("en-CA", {timeZone: TZ});
@@ -892,13 +897,13 @@ function readyView() {
   const noAr = b => !b.publicarAs || (b.publicarAs.toMillis ? b.publicarAs.toMillis() : +new Date(b.publicarAs)) <= agora;
   const todos = (window.palTickets || []).filter(b => b && b.date === today && Array.isArray(b.sel) && b.sel.length && noAr(b));
   if (!todos.length) return "";
-  const dia = palpiteDoDia(todos), list = todos.filter(b => b !== dia);
-  if (!list.length) return cardDoDia(dia);
-  return cardDoDia(dia) + `<div class="ready-wrap"><div class="ready-title">Bilhetes do dia</div>` +
-    list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
-      b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
-      `<div class="bt-par"><a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a>${btCompartilhar(b)}</div></div>`).join("") +
-    `<p class="ready-note">Bilhete é sugestão, não é garantia: pode vir red.<br>${list.some(b => b.codigo) ? "O botão abre a casa de apostas com o bilhete já montado. As odds podem mudar até o jogo." : "Monte as seleções na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
+  // Só o palpite do dia aparece para o usuário. Os bilhetes de várias
+  // seleções continuam sendo gerados e medidos, mas não são listados aqui.
+  const dia = palpiteDoDia(todos);
+  if (!dia) return "";
+  return cardDoDia(dia) + `<div class="ready-wrap"><p class="ready-note">Bilhete é sugestão, não é garantia: pode vir red.<br>${
+    dia.codigo ? "O botão abre a casa de apostas com o palpite já montado. As odds podem mudar até o jogo."
+               : "Monte a seleção na casa de apostas. As odds podem mudar até o jogo."}<br>Ainda não tem conta? <a href="${AFILIADO}" target="_blank" rel="noopener">Crie aqui</a>.</p></div>`;
 }
 
 /* ---------- medir se a confiança é verdade ----------
@@ -1555,6 +1560,7 @@ function riscoNome(nome, odd) {
   return RISCOS.find(r => r.lbl.toLowerCase() === String(alvo).trim().toLowerCase()) || riscoOdd(odd);
 }
 const rskTag = (r, cls) => `<span class="rsk ${cls || ""}" style="color:${r.c};background:${r.c}1f"><i></i>${r.lbl}</span>`;
+const ICONE_PLAY = `<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>`;
 const ICONE_SHR = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/></svg>`;
 const LEGENDA = `<div class="risco-leg"><span>Do mais seguro ao mais arriscado:</span>${RISCOS.map(r => `<b style="background:${r.c}" title="${r.lbl}"></b>`).join("")}</div>`;
 // chance de o bilhete inteiro bater: as confianças se multiplicam
