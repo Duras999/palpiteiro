@@ -894,7 +894,7 @@ function readyView() {
   if (!todos.length) return "";
   const dia = palpiteDoDia(todos), list = todos.filter(b => b !== dia);
   if (!list.length) return cardDoDia(dia);
-  return cardDoDia(dia) + `<div class="ready-wrap"><div class="ready-title">Bilhetes prontos do Palpiteiro</div>` +
+  return cardDoDia(dia) + `<div class="ready-wrap"><div class="ready-title">Bilhetes do dia</div>` +
     list.map(b => `<div class="ready fade"><div class="ready-head">${(() => { const r = riscoNome(b.tipo, b.odd); return `<span class="ready-tag"${r ? ` style="background:${r.c};color:#0b0e12"` : ""}>${esc(r ? r.lbl : (b.tipo || "Bilhete"))}</span>`; })()}${b.odd ? `<span class="ready-odd">Odd ${esc(b.odd)}</span>` : ""}</div>` +
       b.sel.map(x => `<div class="ready-sel"><div class="g">${esc(x.jogo)}${x.hora ? " · " + esc(x.hora) : ""}</div><div class="m">${esc(x.mercado)}</div></div>`).join("") +
       `<div class="bt-par"><a class="gen ready-btn" href="${esc(linkDoBilhete(b))}" target="_blank" rel="noopener" onclick="window.track&&window.track('bets');window.palClick&&window.palClick('${esc(b.id || "")}')">${b.codigo ? "Apostar" : "Abrir a casa"}</a>${btCompartilhar(b)}</div></div>`).join("") +
@@ -1013,7 +1013,7 @@ window.palBemVindo = () => {
     <p>Bem-vindo ao Palpiteiro. Em 30 segundos você aprende tudo:</p>
     <ul>
       <li><em>⚽</em><span><b>Partidas</b> — toque num jogo para ver sequências, confrontos e os palpites com a chance de cada um.</span></li>
-      <li><em>⭐</em><span><b>Palpites</b> — os bilhetes prontos do dia, do mais seguro ao mais arriscado.</span></li>
+      <li><em>⭐</em><span><b>Palpites</b> — os bilhetes do dia, do mais seguro ao mais arriscado.</span></li>
       <li><em>🏆</em><span><b>Bolão</b> — chute o placar dos jogos e dispute o ranking do mês. É de graça.</span></li>
       <li><em>🔖</em><span><b>Meus times</b> — escolha seus times e os jogos deles aparecem primeiro.</span></li>
     </ul>
@@ -2055,7 +2055,7 @@ async function homeView() {
     conferirBilhetes().then(m => { if (m) { retro = null; if (location.hash.slice(1) === "retro") render(); } }).catch(() => {});
     calibrarMotor().catch(() => {});
     const linkRetro = `<div style="padding:0 16px 4px"><button class="pf-bt" onclick="go('retro')">Ver o retrospecto: quantos deram green</button></div>`;
-    return `<div class="top">${head}</div>` + convitePush() + cardZe() + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhetes prontos pra hoje.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + linkRetro + credit;
+    return `<div class="top">${head}</div>` + convitePush() + cardZe() + gerarView() + (r || (window.palIsAdmin ? "" : `<div class="empty">Ainda não tem bilhete do dia.<br>Volta mais tarde ou monte o seu em <b style="color:var(--green)">Partidas</b>.</div>`)) + linkRetro + credit;
   }
   const top = `<div class="top">${head}
     <div class="sbar"><div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
