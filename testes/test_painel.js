@@ -64,15 +64,15 @@ const PORT = 8776, URL = `http://localhost:${PORT}/ia/`, HOJE = "2026-11-18";
     window.__db={"users/u1":{status:"approved",name:"Ana",favs:[]}${extra}};
     try{localStorage.setItem("pal-favs","[]");localStorage.setItem("pal-bemvindo","1")}catch(e){}`;
   p = await ctx(browser, {}, conta(`,"config/banner":{ativo:true,texto:"Live hoje às 20h",link:"https://tiktok.test/z",bt:"Assistir"},
-    "tickets/ag":{date:"${HOJE}",tipo:"Seguro",codigo:"AG1",sel:[{jogo:"A x B",mercado:"Mais de 2.5"},{jogo:"C x D",mercado:"Ambas marcam: Sim"}],publicarAs:"${iso(3)}"},
-    "tickets/ja":{date:"${HOJE}",tipo:"Arriscado",codigo:"JA1",sel:[{jogo:"E x F",mercado:"Vitória do E"},{jogo:"G x H",mercado:"Menos de 2.5"}]}`));
+    "tickets/ag":{date:"${HOJE}",tipo:"Seguro",codigo:"AG1",sel:[{jogo:"A x B",mercado:"Mais de 2.5"}],publicarAs:"${iso(3)}"},
+    "tickets/ja":{date:"${HOJE}",tipo:"Arriscado",codigo:"JA1",sel:[{jogo:"E x F",mercado:"Vitória do E"}]}`));
   await p.goto(URL); await p.waitForSelector(".league");
   await p.waitForSelector(".recado");
   const rec = await p.innerText(".recado");
   ok(/Live hoje às 20h/.test(rec) && /Assistir/.test(rec), "recado do painel aparece no app");
   ok((await p.locator(".recado a").getAttribute("href")) === "https://tiktok.test/z", "e o botão leva ao link");
   await p.screenshot({path: "shots/y4-recado-app.png"});
-  await p.locator(".seg button", {hasText: "Palpites"}).click(); await p.waitForSelector(".ready");
+  await p.locator(".seg button", {hasText: "Palpites"}).click(); await p.waitForSelector(".dia");
   const pal = await p.innerText("#app");
   ok(/Vitória do E/.test(pal) && !/Mais de 2.5/.test(pal), "bilhete agendado para mais tarde ainda não aparece");
   await p.context().close();

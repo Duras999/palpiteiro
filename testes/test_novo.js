@@ -215,9 +215,9 @@ const hoje = "2026-11-18";
   ok(salvos.length === bl.length && salvos.every(t => t.date === "2026-11-18" && t.codigo === "" && t.clicks === 0 && t.sel.length > 0),
     "bilhetes salvos no banco: " + salvos.length);
   ok(salvos.map(t => t.tipo).sort().join("|") === bl.map(b => b.nivel).sort().join("|"), "níveis salvos batem com a prévia");
-  await p.waitForSelector(".ready-wrap");
-  const naTela = await p.locator(".ready-wrap .ready").count() + await p.locator(".dia").count();
-  ok(naTela === bl.length, `os ${bl.length} bilhetes aparecem na aba Palpites depois de publicar (${naTela})`);
+  await p.waitForTimeout(600);
+  const listados = await p.locator(".ready-wrap .ready").count();
+  ok(listados === 0, "os bilhetes de várias seleções ficam guardados, sem aparecer na aba Palpites");
   await p.screenshot({path: "shots/n12-publicados.png"});
   await p.context().close();
   // usuário comum não vê o botão

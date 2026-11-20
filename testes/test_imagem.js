@@ -21,7 +21,7 @@ const LEITOR = fs.readFileSync(path.join(__dirname, "qr", "ler.js"), "utf8")
     try{localStorage.setItem("pal-favs","[]");}catch(e){}`);
   await p.goto(URL); await p.waitForSelector(".league");
   await p.locator(".seg button", {hasText: "Palpites"}).click();
-  await p.waitForSelector(".ready", {timeout: 8000});
+  await p.waitForSelector(".dia", {timeout: 8000});
 
   /* ---------- o QR gerado dentro do app é mesmo legível ---------- */
   await p.evaluate(LEITOR);
@@ -54,18 +54,18 @@ const LEITOR = fs.readFileSync(path.join(__dirname, "qr", "ler.js"), "utf8")
 
   /* ---------- o botão está nos dois lugares ---------- */
   ok(await p.locator(".dia .shr").count() === 1, "palpite do dia tem o botão de imagem");
-  ok(await p.locator(".ready .shr").count() === 1, "bilhete pronto tem o botão de imagem");
-  ok(/Imagem/.test(await p.locator(".ready .shr").first().innerText()), "botão diz Imagem");
+  ok(await p.locator(".ready-wrap .ready").count() === 0, "a lista de bilhetes saiu da aba Palpites");
+  ok(/Imagem/.test(await p.locator(".dia .shr").first().innerText()), "o botão de imagem diz Imagem");
 
   /* ---------- clicar baixa o arquivo quando o celular não sabe compartilhar ---------- */
   await p.evaluate(() => { delete navigator.canShare; });
   const [down] = await Promise.all([
     p.waitForEvent("download", {timeout: 15000}),
-    p.locator(".ready .shr").first().click()
+    p.locator(".dia .shr").first().click()
   ]);
   ok(/^palpiteiro-.*\.png$/.test(down.suggestedFilename()), "baixa o arquivo com nome do app: " + down.suggestedFilename());
   await p.waitForTimeout(400);
-  ok(await p.locator(".ready .shr").first().innerText() === "Imagem", "o botão volta ao normal depois");
+  ok(await p.locator(".dia .shr").first().innerText() === "Imagem", "o botão volta ao normal depois");
 
   /* ---------- quando o celular sabe, abre o compartilhar do sistema ---------- */
   await p.evaluate(() => {

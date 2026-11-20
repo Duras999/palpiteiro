@@ -95,13 +95,13 @@ const hexToRgb = h => `rgb(${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),
   ok(/Chance de bater tudo/.test(bt) && /51%/.test(bt), "chance do bilhete inteiro (80% x 64% = 51%)");
   ok(/Arriscado/.test(await p.innerText(".slip-rsk")) && !/Muito arriscado/.test(await p.innerText(".slip-rsk")), "bilhete de 51% fica Arriscado");
   await p.screenshot({path: "shots/r2-bilhete.png"});
-  // bilhetes prontos do painel
-  await p.goto(B); await p.waitForSelector(".league"); await p.locator(".seg button", {hasText: "Palpites"}).click(); await p.waitForSelector(".ready");
-  const tags = await p.$$eval(".ready-tag", e => e.map(x => ({t: x.textContent.trim(), bg: x.style.background})));
-  ok(tags[0].t === "Médio" && tags[0].bg.includes("255, 211, 77"), "nome antigo Equilibrado vira Médio amarelo");
-  ok(tags[1].t === "Muito arriscado" && tags[1].bg.includes("255, 90, 90"), "Muito arriscado fica vermelho");
-  ok(tags[2].t === "Muito seguro" && tags[2].bg.includes("25, 224, 122"), "sem nome: odd 1.45 vira Muito seguro verde");
-  await p.screenshot({path: "shots/r3-prontos.png"});
+  // como o painel nomeia o risco de cada bilhete
+  await p.goto(B); await p.waitForSelector(".league");
+  const tags = await p.evaluate(() => [["Equilibrado", "3.54"], ["Muito arriscado", "9.10"], ["", "1.45"]]
+    .map(([n, o]) => { const r = riscoNome(n, o); return {t: r.lbl, c: r.c}; }));
+  ok(tags[0].t === "Médio" && tags[0].c === "#ffd34d", "nome antigo Equilibrado vira Médio amarelo");
+  ok(tags[1].t === "Muito arriscado" && tags[1].c === "#ff5a5a", "Muito arriscado fica vermelho");
+  ok(tags[2].t === "Muito seguro" && tags[2].c === "#19e07a", "sem nome: odd 1.45 vira Muito seguro verde");
   await p.context().close();
 
   // painel

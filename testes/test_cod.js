@@ -6,18 +6,26 @@ const PORT = 8773, URL = `http://localhost:${PORT}/ia/`, HOJE = "2026-11-18";
   const browser = await chromium.launch();
   const T = (id, cod, casaLink) => `"tickets/${id}":{date:"${HOJE}",tipo:"Seguro",odd:"2.1",codigo:${JSON.stringify(cod)},
     ${casaLink ? `casaLink:${JSON.stringify(casaLink)},` : ""}clicks:0,order:1,
-    sel:[{jogo:"Grêmio x Inter",hora:"19:00",mercado:"Ambas marcam: Sim"},{jogo:"Flamengo x Vasco",hora:"21:00",mercado:"Mais de 2.5 gols"}]}`;
+    sel:[{jogo:"Grêmio x Inter",hora:"19:00",mercado:"Ambas marcam: Sim"}]}`;
 
   /* app: botão honesto sem código */
-  let p = await ctx(browser, {}, `window.__user={uid:"u1",email:"ana@teste.local",displayName:"Ana",providerData:[]};
-    window.__db={"users/u1":{status:"approved",name:"Ana",favs:[]},${T("semcod", "")},${T("comcod", "ABC123")}};
-    try{localStorage.setItem("pal-favs","[]")}catch(e){}`);
-  await p.goto(URL); await p.waitForSelector(".league");
-  await p.locator(".seg button", {hasText: "Palpites"}).click(); await p.waitForSelector(".ready");
-  const bts = await p.$$eval(".ready-btn", e => e.map(x => ({t: x.textContent.trim(), h: x.getAttribute("href")})));
-  const semCod = bts.find(b => b.t === "Abrir a casa"), comCod = bts.find(b => b.t === "Apostar");
-  ok(!!semCod && semCod.h === "https://www.bingoemcasa17.com/pt-BR/sportsbook", "sem código: abre a casa, não o cadastro — " + (semCod && semCod.h));
-  ok(!!comCod && comCod.h.endsWith("btBookingCode=ABC123"), "com código: abre o bilhete montado");
+  const abrirPalpites = async (bilhetes) => {
+    const q = await ctx(browser, {}, `window.__user={uid:"u1",email:"ana@teste.local",displayName:"Ana",providerData:[]};
+      window.__db={"users/u1":{status:"approved",name:"Ana",favs:[]},${bilhetes}};
+      try{localStorage.setItem("pal-favs","[]")}catch(e){}`);
+    await q.goto(URL); await q.waitForSelector(".league");
+    await q.locator(".seg button", {hasText: "Palpites"}).click(); await q.waitForSelector(".ready-btn");
+    return q;
+  };
+  let p = await abrirPalpites(T("semcod", ""));
+  let bt = await p.$eval(".ready-btn", x => ({t: x.textContent.trim(), h: x.getAttribute("href")}));
+  ok(bt.t === "Abrir a casa" && bt.h === "https://www.bingoemcasa17.com/pt-BR/sportsbook",
+    "sem código: abre a casa, não o cadastro — " + bt.h);
+  await p.context().close();
+
+  p = await abrirPalpites(T("comcod", "ABC123"));
+  bt = await p.$eval(".ready-btn", x => ({t: x.textContent.trim(), h: x.getAttribute("href")}));
+  ok(bt.t === "Apostar" && bt.h.endsWith("btBookingCode=ABC123"), "com código: abre o bilhete montado");
   await p.context().close();
   // com casa própria cadastrada
   p = await ctx(browser, {}, `window.__user={uid:"u1",email:"ana@teste.local",displayName:"Ana",providerData:[]};
@@ -42,7 +50,7 @@ const PORT = 8773, URL = `http://localhost:${PORT}/ia/`, HOJE = "2026-11-18";
   await p.screenshot({path: "shots/k1-codigos.png"});
   await p.locator("[data-copy]").first().click(); await p.waitForTimeout(300);
   const copiado = await p.evaluate(() => navigator.clipboard.readText());
-  ok(copiado === "Grêmio x Inter 19:00 - Ambas marcam: Sim\nFlamengo x Vasco 21:00 - Mais de 2.5 gols",
+  ok(copiado === "Grêmio x Inter 19:00 - Ambas marcam: Sim",
     "Copiar jogos entrega a lista pronta para montar na casa");
   await p.locator("[data-cod]").nth(0).fill("abc 123");
   await p.locator("[data-cod]").nth(1).fill("xyz789");

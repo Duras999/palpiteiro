@@ -39,7 +39,7 @@ const PORT = 8775, URL = `http://localhost:${PORT}/ia/`;
   await p.locator(".seg button", {hasText: "Palpites"}).click(); await p.waitForSelector(".dia");
   const dia = await p.innerText(".dia");
   ok(/Palpite do dia/.test(dia) && /Flamengo marca: Sim/.test(dia) && /Muito seguro/.test(dia), "palpite do dia em destaque");
-  ok(await p.locator(".ready-wrap .ready").count() === 1, "o bilhete de 2 seleções continua na lista normal");
+  ok(await p.locator(".ready-wrap .ready").count() === 0, "os bilhetes de várias seleções não aparecem mais para o usuário");
   ok((await p.locator(".dia .ready-btn").getAttribute("href")).endsWith("btBookingCode=AAA"), "o botão do destaque abre o bilhete certo");
   /* ---- 23: Zé Tabela ---- */
   ok(await p.locator(".ze").count() === 1 && /Zé Tabela no TikTok/.test(await p.innerText(".ze")), "card do Zé Tabela na aba Palpites");
